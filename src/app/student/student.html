@@ -1,0 +1,68 @@
+<h2>Student Management</h2>
+
+<div class="action-row" style="margin-bottom:12px;">
+  <button (click)="getAllStudents()">Get All Students</button>
+</div>
+
+<div class="action-row" style="margin-bottom:12px;">
+  <input type="text" [(ngModel)]="searchId" placeholder="Enter Student ID"/>
+  <button (click)="getStudentById()">Get Student by ID</button>
+</div>
+
+<div class="action-row" style="margin-bottom:12px;">
+  <button (click)="toggleAddForm()">Add Student</button>
+  <button (click)="toggleUpdateForm()">Update Student</button>
+</div>
+
+<div class="action-row" style="margin-bottom:12px;">
+  <input type="text" [(ngModel)]="deleteId" placeholder="ID to delete"/>
+  <button (click)="deleteById()">Delete by ID</button>
+</div>
+
+<div *ngIf="showAddForm" class="form-group">
+  <h3>Add Student</h3>
+  <input type="text" [(ngModel)]="addForm.name" placeholder="Name"/>
+  <input type="date" [(ngModel)]="addForm.dob" />
+  <input type="text" [(ngModel)]="addForm.dept" placeholder="Department"/>
+  <div>
+    <button (click)="submitAdd()">Submit Add</button>
+    <button (click)="toggleAddForm()">Cancel</button>
+  </div>
+</div>
+
+<div *ngIf="showUpdateForm" class="form-group">
+  <h3>Update Student</h3>
+  <input type="text" [(ngModel)]="updateId" placeholder="Student ID (required)"/>
+  <input type="text" [(ngModel)]="updateForm.name" placeholder="Name (optional)"/>
+  <input type="date" [(ngModel)]="updateForm.dob" />
+  <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department (optional)"/>
+  <div>
+    <button (click)="submitUpdate()">Submit Update</button>
+    <button (click)="toggleUpdateForm()">Cancel</button>
+  </div>
+</div>
+
+<table *ngIf="showTable && students.length > 0">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>DOB</th>
+      <th>Dept</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let student of students">
+      <td>{{ student.id }}</td>
+      <td>{{ student.name }}</td>
+      <td>{{ student.dob }}</td>
+      <td>{{ student.dept }}</td>
+      <td>
+        <button (click)="deleteStudent(student.id)">Delete</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>{{ message }}</p>
