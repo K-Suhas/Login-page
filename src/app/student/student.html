@@ -1,22 +1,19 @@
 <div class="container">
   <h2>Student Management</h2>
 
-<!-- Search Bar -->
-<div class="action-row">
-  <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, id or DOB (yyyy-MM-dd)" />
-  <button class="secondary-button" (click)="searchStudents()">Search</button>
-  <button class="secondary-button" (click)="searchQuery=''; filteredStudents=[]">Clear</button>
-</div>
 
+  <div class="action-row">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, id or DOB (yyyy-MM-dd)" />
+    <button class="secondary-button" (click)="searchStudents()">Search</button>
+    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllStudents()">Clear</button>
+  </div>
 
-  <!-- Get All Students -->
   <div class="action-row">
     <button class="primary-button" (click)="getAllStudents()">
       <i class="fas fa-list"></i> Get All Students
     </button>
   </div>
 
-  <!-- Get Student by ID -->
   <div class="action-row">
     <input type="text" [(ngModel)]="searchId" placeholder="Enter Student ID"/>
     <button class="secondary-button" (click)="getStudentById()">
@@ -24,7 +21,7 @@
     </button>
   </div>
 
-  <!-- Add / Update Toggle -->
+  
   <div class="action-row">
     <button class="primary-button" (click)="toggleAddForm()">
       <i class="fas fa-plus"></i> Add Student
@@ -34,7 +31,7 @@
     </button>
   </div>
 
-  <!-- Delete by ID -->
+
   <div class="action-row">
     <input type="text" [(ngModel)]="deleteId" placeholder="ID to delete"/>
     <button class="danger-button" (click)="deleteById()">
@@ -42,7 +39,7 @@
     </button>
   </div>
 
-  <!-- Add Form -->
+
   <div *ngIf="showAddForm" class="form-group">
     <h3>Add New Student</h3>
     <div class="form-row">
@@ -56,7 +53,6 @@
     </div>
   </div>
 
-  <!-- Update Form -->
   <div *ngIf="showUpdateForm" class="form-group">
     <h3>Update Student</h3>
     <div class="form-row">
@@ -71,7 +67,6 @@
     </div>
   </div>
 
-  <!-- Student Table -->
   <table *ngIf="filteredStudents && filteredStudents.length > 0">
     <thead>
       <tr>
@@ -97,7 +92,12 @@
     </tbody>
   </table>
 
-  <!-- Message Display -->
+  <div class="pagination-controls" *ngIf="totalPages > 1">
+    <button (click)="previousPage()" [disabled]="currentPage === 0">Previous</button>
+    <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage + 1 >= totalPages">Next</button>
+  </div>
+
   <p class="message" 
      [class.success]="!message.includes('Error')" 
      [class.error]="message.includes('Error')" 

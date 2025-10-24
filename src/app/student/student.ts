@@ -23,19 +23,47 @@ export class StudentComponent implements OnInit {
   updateForm: StudentDTO = { name: '', dob: '', dept: '' };
   filteredStudents: StudentDTO[] = [];
 
+  currentPage = 0;
+  pageSize = 5;
+  totalPages = 0;
+
   constructor(private studentService: StudentService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    
+  }
 
   getAllStudents(): void {
-    this.studentService.getAllStudents().subscribe({
-      next: (students) => {
-        this.filteredStudents = students ?? [];
+    this.studentService.getAllStudents(this.currentPage, this.pageSize).subscribe({
+      next: (data) => {
+        this.filteredStudents = data.content ?? [];
+        this.totalPages = data.totalPages;
         this.setMessage('');
       },
       error: (err) => {
         console.error('Error fetching students:', err);
         this.setMessage('Error fetching students');
+        this.filteredStudents = [];
+      }
+    });
+  }
+
+  searchStudents(): void {
+    if (!this.searchQuery.trim()) {
+      this.setMessage('Please enter a search term.');
+      this.filteredStudents = [];
+      return;
+    }
+
+    this.studentService.searchStudents(this.searchQuery.trim(), this.currentPage, this.pageSize).subscribe({
+      next: (data) => {
+        this.filteredStudents = data.content ?? [];
+        this.totalPages = data.totalPages;
+        this.setMessage(data.content?.length ? '' : 'No students found.');
+      },
+      error: (err) => {
+        console.error('Search error:', err);
+        this.setMessage('Error searching students');
         this.filteredStudents = [];
       }
     });
@@ -52,6 +80,7 @@ export class StudentComponent implements OnInit {
       next: (student) => {
         if (student) {
           this.filteredStudents = [student];
+          this.totalPages = 1;
           this.setMessage('');
         } else {
           this.setMessage('Student not found');
@@ -76,7 +105,7 @@ export class StudentComponent implements OnInit {
     this.studentService.deleteStudent(id).subscribe({
       next: () => {
         this.setMessage('Student deleted successfully');
-        this.refreshStudents();
+        this.getAllStudents();
       },
       error: (err) => {
         console.error('Error deleting student:', err);
@@ -94,7 +123,7 @@ export class StudentComponent implements OnInit {
     this.studentService.deleteStudent(id).subscribe({
       next: () => {
         this.setMessage('Student deleted successfully');
-        this.refreshStudents();
+        this.getAllStudents();
       },
       error: (err) => {
         console.error('Error deleting student:', err);
@@ -123,10 +152,9 @@ export class StudentComponent implements OnInit {
 
     this.studentService.addStudent(this.addForm).subscribe({
       next: (res) => {
-        console.log('Add success:', res);
         this.setMessage('Student added successfully');
         this.toggleAddForm();
-        this.refreshStudents();
+        this.getAllStudents();
       },
       error: (err) => {
         console.error('Add error:', err);
@@ -144,10 +172,9 @@ export class StudentComponent implements OnInit {
 
     this.studentService.updateStudent(id, this.updateForm).subscribe({
       next: (res) => {
-        console.log('Update success:', res);
         this.setMessage('Student updated successfully');
         this.toggleUpdateForm();
-        this.refreshStudents();
+        this.getAllStudents();
       },
       error: (err) => {
         console.error('Update error:', err);
@@ -156,35 +183,18 @@ export class StudentComponent implements OnInit {
     });
   }
 
-    searchStudents(): void {
-      if (!this.searchQuery.trim()) {
-        this.setMessage('Please enter a search term.');
-        this.filteredStudents = [];
-        return;
-      }
-
-      this.studentService.searchStudents(this.searchQuery.trim()).subscribe({
-        next: (students) => {
-          this.filteredStudents = students ?? [];
-          this.setMessage(students?.length ? '' : 'No students found.');
-        },
-        error: (err) => {
-          console.error('Search error:', err);
-          this.setMessage('Error searching students');
-          this.filteredStudents = [];
-        }
-      });
+  previousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.searchQuery ? this.searchStudents() : this.getAllStudents();
     }
+  }
 
-  private refreshStudents(): void {
-    this.studentService.getAllStudents().subscribe({
-      next: (students) => {
-        this.filteredStudents = students ?? [];
-      },
-      error: (err) => {
-        console.error('Error refreshing student list:', err);
-      }
-    });
+  nextPage(): void {
+    if (this.currentPage + 1 < this.totalPages) {
+      this.currentPage++;
+      this.searchQuery ? this.searchStudents() : this.getAllStudents();
+    }
   }
 
   private setMessage(msg: string): void {

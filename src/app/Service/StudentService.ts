@@ -18,17 +18,16 @@ export class StudentService {
 
   constructor(private http: HttpClient) {}
 
-  getAllStudents(): Observable<StudentDTO[]> {
-    return this.http.get<StudentDTO[]>(this.baseUrl);
-  }
-
+ getAllStudents(page: number, size: number): Observable<any> {
+  return this.http.get<any>(`${this.baseUrl}?page=${page}&size=${size}`);
+}
   getStudentById(id: number): Observable<StudentDTO> {
     return this.http.get<StudentDTO>(`${this.baseUrl}/${id}`);
   }
 
-  searchStudents(query: string): Observable<StudentDTO[]> {
-    return this.http.get<StudentDTO[]>(`${this.baseUrl}/search?query=${query}`);
-  }
+  searchStudents(query: string, page: number, size: number): Observable<any> {
+  return this.http.get<any>(`${this.baseUrl}/search?query=${query}&page=${page}&size=${size}`);
+}
 
   addStudent(student: StudentDTO): Observable<string> {
     return this.http.post(this.baseUrl, student, { responseType: 'text' });
