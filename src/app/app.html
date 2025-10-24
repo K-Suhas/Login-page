@@ -1,18 +1,66 @@
-<div *ngIf="router.url === '/login' || router.url === '/'">
-  <h1>SENSEI LOGIN PAGE</h1>
-  <p *ngIf="!isSignedUp">Welcome to the SENSEI application. Please log in to continue.</p>
-  <p *ngIf="isSignedUp">Create your account below.</p>
+<div class="login-container" *ngIf="router.url === '/login' || router.url === '/'">
+  <h1>SENSEI LOGIN</h1>
+  
+  <p class="welcome-text" *ngIf="!isSignedUp">
+    Welcome to the SENSEI application. Please log in to continue.
+  </p>
+  <p class="welcome-text" *ngIf="isSignedUp">
+    Create your account below.
+  </p>
 
-  <input type="text" placeholder="Username" [(ngModel)]="username" />
-  <input type="password" placeholder="Password" [(ngModel)]="password" />
+  <div class="form-group">
+    <div class="input-group">
+      <input 
+        type="text" 
+        placeholder="Username" 
+        [(ngModel)]="username"
+        autocomplete="off" 
+      />
+    </div>
+    
+    <div class="input-group">
+      <input 
+        type="password" 
+        placeholder="Password" 
+        [(ngModel)]="password" 
+      />
+    </div>
 
-  <button (click)="handleLogin()" *ngIf="!isSignedUp">Login</button>
-  <button (click)="handleSignup()" *ngIf="isSignedUp">Create Account</button>
+    <div class="button-container">
+      <button 
+        class="primary-button" 
+        (click)="handleLogin()" 
+        *ngIf="!isSignedUp"
+      >
+        Login
+      </button>
+      
+      <button 
+        class="primary-button" 
+        (click)="handleSignup()" 
+        *ngIf="isSignedUp"
+      >
+        Create Account
+      </button>
 
-  <p *ngIf="!isSignedUp">Don't have an account?</p>
-  <button (click)="switchToSignup()" *ngIf="!isSignedUp">Sign Up</button>
+      <button 
+        class="secondary-button" 
+        (click)="switchToSignup()" 
+        *ngIf="!isSignedUp"
+      >
+        Sign Up
+      </button>
+    </div>
+  </div>
 
-  <p *ngIf="message">{{ message }}</p>
+  <p 
+    class="message" 
+    [class.error]="message.includes('Invalid')" 
+    [class.success]="message.includes('created')" 
+    *ngIf="message"
+  >
+    {{ message }}
+  </p>
 </div>
 
 <div *ngIf="router.url !== '/login' && router.url !== '/'">

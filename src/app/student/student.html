@@ -1,68 +1,106 @@
-<h2>Student Management</h2>
+<div class="container">
+  <h2>Student Management</h2>
 
-<div class="action-row" style="margin-bottom:12px;">
-  <button (click)="getAllStudents()">Get All Students</button>
-</div>
-
-<div class="action-row" style="margin-bottom:12px;">
-  <input type="text" [(ngModel)]="searchId" placeholder="Enter Student ID"/>
-  <button (click)="getStudentById()">Get Student by ID</button>
-</div>
-
-<div class="action-row" style="margin-bottom:12px;">
-  <button (click)="toggleAddForm()">Add Student</button>
-  <button (click)="toggleUpdateForm()">Update Student</button>
-</div>
-
-<div class="action-row" style="margin-bottom:12px;">
-  <input type="text" [(ngModel)]="deleteId" placeholder="ID to delete"/>
-  <button (click)="deleteById()">Delete by ID</button>
-</div>
-
-<div *ngIf="showAddForm" class="form-group">
-  <h3>Add Student</h3>
-  <input type="text" [(ngModel)]="addForm.name" placeholder="Name"/>
-  <input type="date" [(ngModel)]="addForm.dob" />
-  <input type="text" [(ngModel)]="addForm.dept" placeholder="Department"/>
-  <div>
-    <button (click)="submitAdd()">Submit Add</button>
-    <button (click)="toggleAddForm()">Cancel</button>
+  <!-- Search Bar -->
+  <div class="action-row">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept or id" />
+    <button class="secondary-button" (click)="searchStudents()">Search</button>
+    <button class="secondary-button" (click)="searchQuery=''; filteredStudents=[]">Clear</button>
   </div>
-</div>
 
-<div *ngIf="showUpdateForm" class="form-group">
-  <h3>Update Student</h3>
-  <input type="text" [(ngModel)]="updateId" placeholder="Student ID (required)"/>
-  <input type="text" [(ngModel)]="updateForm.name" placeholder="Name (optional)"/>
-  <input type="date" [(ngModel)]="updateForm.dob" />
-  <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department (optional)"/>
-  <div>
-    <button (click)="submitUpdate()">Submit Update</button>
-    <button (click)="toggleUpdateForm()">Cancel</button>
+  <!-- Get All Students -->
+  <div class="action-row">
+    <button class="primary-button" (click)="getAllStudents()">
+      <i class="fas fa-list"></i> Get All Students
+    </button>
   </div>
+
+  <!-- Get Student by ID -->
+  <div class="action-row">
+    <input type="text" [(ngModel)]="searchId" placeholder="Enter Student ID"/>
+    <button class="secondary-button" (click)="getStudentById()">
+      <i class="fas fa-search"></i> Get Student
+    </button>
+  </div>
+
+  <!-- Add / Update Toggle -->
+  <div class="action-row">
+    <button class="primary-button" (click)="toggleAddForm()">
+      <i class="fas fa-plus"></i> Add Student
+    </button>
+    <button class="secondary-button" (click)="toggleUpdateForm()">
+      <i class="fas fa-edit"></i> Update Student
+    </button>
+  </div>
+
+  <!-- Delete by ID -->
+  <div class="action-row">
+    <input type="text" [(ngModel)]="deleteId" placeholder="ID to delete"/>
+    <button class="danger-button" (click)="deleteById()">
+      <i class="fas fa-trash"></i> Delete Student
+    </button>
+  </div>
+
+  <!-- Add Form -->
+  <div *ngIf="showAddForm" class="form-group">
+    <h3>Add New Student</h3>
+    <div class="form-row">
+      <input type="text" [(ngModel)]="addForm.name" placeholder="Name"/>
+      <input type="date" [(ngModel)]="addForm.dob"/>
+      <input type="text" [(ngModel)]="addForm.dept" placeholder="Department"/>
+    </div>
+    <div class="form-row">
+      <button class="primary-button" (click)="submitAdd()">Submit</button>
+      <button class="secondary-button" (click)="toggleAddForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Update Form -->
+  <div *ngIf="showUpdateForm" class="form-group">
+    <h3>Update Student</h3>
+    <div class="form-row">
+      <input type="text" [(ngModel)]="updateId" placeholder="Student ID (required)"/>
+      <input type="text" [(ngModel)]="updateForm.name" placeholder="Name (optional)"/>
+      <input type="date" [(ngModel)]="updateForm.dob" />
+      <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department (optional)"/>
+    </div>
+    <div class="form-row">
+      <button class="primary-button" (click)="submitUpdate()">Update</button>
+      <button class="secondary-button" (click)="toggleUpdateForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Student Table -->
+  <table *ngIf="filteredStudents && filteredStudents.length > 0">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>DOB</th>
+        <th>Department</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let student of filteredStudents">
+        <td>{{ student.id }}</td>
+        <td>{{ student.name }}</td>
+        <td>{{ student.dob | date:'mediumDate' }}</td>
+        <td>{{ student.dept }}</td>
+        <td>
+          <button class="danger-button" (click)="deleteStudent(student.id)">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Message Display -->
+  <p class="message" 
+     [class.success]="!message.includes('Error')" 
+     [class.error]="message.includes('Error')" 
+     *ngIf="message">
+    {{ message }}
+  </p>
 </div>
-
-<table *ngIf="showTable && students.length > 0">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>DOB</th>
-      <th>Dept</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let student of students">
-      <td>{{ student.id }}</td>
-      <td>{{ student.name }}</td>
-      <td>{{ student.dob }}</td>
-      <td>{{ student.dept }}</td>
-      <td>
-        <button (click)="deleteStudent(student.id)">Delete</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<p>{{ message }}</p>

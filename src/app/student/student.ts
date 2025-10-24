@@ -1,119 +1,198 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { StudentService, StudentDTO } from '../Service/StudentService';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-student',
   standalone: true,
+  imports: [CommonModule, FormsModule, DatePipe],
   templateUrl: './student.html',
-  styleUrls: ['./student.css'],
-  imports: [CommonModule, FormsModule]
+  styleUrls: ['./student.css']
 })
 export class StudentComponent implements OnInit {
-  students: StudentDTO[] = [];
-  message = '';
+  searchQuery = '';
   searchId = '';
-  showTable = false;
-
+  deleteId = '';
+  updateId = '';
+  message = '';
   showAddForm = false;
   showUpdateForm = false;
 
-  addForm: Partial<StudentDTO> = { name: '', dob: '', dept: '' };
-  updateForm: Partial<StudentDTO> = { name: '', dob: '', dept: '' };
-  updateId = '';
-  deleteId = '';
+  addForm: StudentDTO = { name: '', dob: '', dept: '' };
+  updateForm: StudentDTO = { name: '', dob: '', dept: '' };
+  filteredStudents: StudentDTO[] = [];
 
   constructor(private studentService: StudentService) {}
 
-  ngOnInit(): void {
-   
-  }
+  ngOnInit(): void {}
 
   getAllStudents(): void {
     this.studentService.getAllStudents().subscribe({
-      next: (data: StudentDTO[]) => {
-        this.students = data || [];
-        this.showTable = true; 
-        this.message = this.students.length ? 'Students fetched' : 'No students found';
+      next: (students) => {
+        this.filteredStudents = students ?? [];
+        this.setMessage('');
       },
-      error: (err: any) => {
-        this.message = 'Error fetching students: ' + (err?.message || err);
-        this.showTable = false; // Hide table on error
+      error: (err) => {
+        console.error('Error fetching students:', err);
+        this.setMessage('Error fetching students');
+        this.filteredStudents = [];
       }
     });
   }
 
   getStudentById(): void {
-    const idNum = Number(this.searchId);
-    if (!idNum) { this.message = 'Enter a valid ID'; return; }
-    this.studentService.getStudentById(idNum).subscribe({
-      next: (data: StudentDTO) => { this.students = data ? [data] : []; this.message = 'Student fetched'; },
-      error: (err: any) => this.message = 'Error fetching student: ' + (err?.message || err)
+    const id = Number(this.searchId);
+    if (!id) {
+      this.setMessage('Invalid ID');
+      return;
+    }
+
+    this.studentService.getStudentById(id).subscribe({
+      next: (student) => {
+        if (student) {
+          this.filteredStudents = [student];
+          this.setMessage('');
+        } else {
+          this.setMessage('Student not found');
+          this.filteredStudents = [];
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching student:', err);
+        this.setMessage('Student not found');
+        this.filteredStudents = [];
+      }
     });
   }
 
-  toggleAddForm(): void { this.showAddForm = !this.showAddForm; if (this.showAddForm) { this.showUpdateForm = false; this.resetAddForm(); } }
-  toggleUpdateForm(): void { this.showUpdateForm = !this.showUpdateForm; if (this.showUpdateForm) { this.showAddForm = false; this.resetUpdateForm(); } }
+  deleteById(): void {
+    const id = Number(this.deleteId);
+    if (!id) {
+      this.setMessage('Invalid ID');
+      return;
+    }
+
+    this.studentService.deleteStudent(id).subscribe({
+      next: () => {
+        this.setMessage('Student deleted successfully');
+        this.refreshStudents();
+      },
+      error: (err) => {
+        console.error('Error deleting student:', err);
+        this.setMessage('Error deleting student');
+      }
+    });
+  }
+
+  deleteStudent(id: number | undefined): void {
+    if (id === undefined) {
+      this.setMessage('Invalid student ID');
+      return;
+    }
+
+    this.studentService.deleteStudent(id).subscribe({
+      next: () => {
+        this.setMessage('Student deleted successfully');
+        this.refreshStudents();
+      },
+      error: (err) => {
+        console.error('Error deleting student:', err);
+        this.setMessage('Error deleting student');
+      }
+    });
+  }
+
+  toggleAddForm(): void {
+    this.showAddForm = !this.showAddForm;
+    this.setMessage('');
+    this.addForm = { name: '', dob: '', dept: '' };
+  }
+
+  toggleUpdateForm(): void {
+    this.showUpdateForm = !this.showUpdateForm;
+    this.setMessage('');
+    this.updateForm = { name: '', dob: '', dept: '' };
+  }
 
   submitAdd(): void {
-    if (!this.addForm.name || !this.addForm.dob || !this.addForm.dept) { this.message = 'Provide name, dob, dept'; return; }
-    this.studentService.createStudent(this.addForm).subscribe({
-      next: (resp: string) => { this.message = resp || 'Created'; this.getAllStudents(); this.resetAddForm(); this.showAddForm = false; },
-      error: (err: any) => this.message = 'Error adding: ' + (err?.message || err)
+    if (!this.addForm.name || !this.addForm.dob || !this.addForm.dept) {
+      this.setMessage('All fields are required');
+      return;
+    }
+
+    this.studentService.addStudent(this.addForm).subscribe({
+      next: (res) => {
+        console.log('Add success:', res);
+        this.setMessage('Student added successfully');
+        this.toggleAddForm();
+        this.refreshStudents();
+      },
+      error: (err) => {
+        console.error('Add error:', err);
+        this.setMessage('Error adding student');
+      }
     });
   }
 
   submitUpdate(): void {
-  const idNum = Number((this.updateId || '').toString().trim());
-  if (!idNum) {
-    this.message = 'Please enter a valid student ID';
-    return;
-  }
-
-  const payload: Partial<StudentDTO> = {};
-  if (this.updateForm.name) payload.name = this.updateForm.name;
-  if (this.updateForm.dob) payload.dob = this.updateForm.dob;
-  if (this.updateForm.dept) payload.dept = this.updateForm.dept;
-
-  if (Object.keys(payload).length === 0) {
-    this.message = 'Please provide at least one field to update';
-    return;
-  }
-
-  console.log('PUT ->', `/student/${idNum}`, payload);
-  this.studentService.updateStudent(idNum, payload).subscribe({
-    next: (resp: string) => {
-      this.message = resp || 'Student updated successfully';
-      this.getAllStudents();
-      this.resetUpdateForm();
-      this.showUpdateForm = false;
-    },
-    error: (err: any) => {
-      console.error('Update error', err);
-      this.message = 'Error updating student: ' + (err?.message || err);
+    const id = Number(this.updateId);
+    if (!id) {
+      this.setMessage('Invalid ID');
+      return;
     }
-  });
-}
 
-  deleteById(): void {
-    const idNum = Number(this.deleteId);
-    if (!idNum) { this.message = 'Enter ID to delete'; return; }
-    this.studentService.deleteStudent(idNum).subscribe({
-      next: (resp: string) => { this.message = resp || 'Deleted'; this.getAllStudents(); this.deleteId = ''; },
-      error: (err: any) => this.message = 'Error deleting: ' + (err?.message || err)
+    this.studentService.updateStudent(id, this.updateForm).subscribe({
+      next: (res) => {
+        console.log('Update success:', res);
+        this.setMessage('Student updated successfully');
+        this.toggleUpdateForm();
+        this.refreshStudents();
+      },
+      error: (err) => {
+        console.error('Update error:', err);
+        this.setMessage('Error updating student');
+      }
     });
   }
 
-  deleteStudent(id?: number): void {
-    const idNum = Number(id);
-    if (!idNum) { this.message = 'Invalid id'; return; }
-    this.studentService.deleteStudent(idNum).subscribe({
-      next: (resp: string) => { this.message = resp || 'Deleted'; this.getAllStudents(); },
-      error: (err: any) => this.message = 'Error deleting: ' + (err?.message || err)
+    searchStudents(): void {
+      if (!this.searchQuery.trim()) {
+        this.setMessage('Please enter a search term.');
+        this.filteredStudents = [];
+        return;
+      }
+
+      this.studentService.searchStudents(this.searchQuery.trim()).subscribe({
+        next: (students) => {
+          this.filteredStudents = students ?? [];
+          this.setMessage(students?.length ? '' : 'No students found.');
+        },
+        error: (err) => {
+          console.error('Search error:', err);
+          this.setMessage('Error searching students');
+          this.filteredStudents = [];
+        }
+      });
+    }
+
+  private refreshStudents(): void {
+    this.studentService.getAllStudents().subscribe({
+      next: (students) => {
+        this.filteredStudents = students ?? [];
+      },
+      error: (err) => {
+        console.error('Error refreshing student list:', err);
+      }
     });
   }
 
-  resetAddForm(): void { this.addForm = { name: '', dob: '', dept: '' }; }
-  resetUpdateForm(): void { this.updateForm = { name: '', dob: '', dept: '' }; this.updateId = ''; }
+  private setMessage(msg: string): void {
+    this.message = msg;
+    if (msg && !msg.includes('Error') && msg !== 'No students found.') {
+      setTimeout(() => {
+        this.message = '';
+      }, 3000);
+    }
+  }
 }
