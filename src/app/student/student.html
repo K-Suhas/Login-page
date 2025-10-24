@@ -1,12 +1,13 @@
 <div class="container">
   <h2>Student Management</h2>
 
-  <!-- Search Bar -->
-  <div class="action-row">
-    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept or id" />
-    <button class="secondary-button" (click)="searchStudents()">Search</button>
-    <button class="secondary-button" (click)="searchQuery=''; filteredStudents=[]">Clear</button>
-  </div>
+<!-- Search Bar -->
+<div class="action-row">
+  <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, id or DOB (yyyy-MM-dd)" />
+  <button class="secondary-button" (click)="searchStudents()">Search</button>
+  <button class="secondary-button" (click)="searchQuery=''; filteredStudents=[]">Clear</button>
+</div>
+
 
   <!-- Get All Students -->
   <div class="action-row">
