@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StudentService, StudentDTO } from '../Service/StudentService';
+import { CourseDTO, CourseService } from '../Service/CourseService';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -18,32 +19,48 @@ export class StudentComponent implements OnInit {
   message = '';
   showAddForm = false;
   showUpdateForm = false;
+  showTable = false;
 
-  addForm: StudentDTO = { name: '', dob: '', dept: '' };
-  updateForm: StudentDTO = { name: '', dob: '', dept: '' };
+  addForm: StudentDTO = { name: '', dob: '', dept: '', courseNames: [] };
+  updateForm: StudentDTO = { name: '', dob: '', dept: '', courseNames: [] };
   filteredStudents: StudentDTO[] = [];
 
   currentPage = 0;
   pageSize = 5;
   totalPages = 0;
 
-  constructor(private studentService: StudentService) {}
+  availableCourses: string[] = [];
 
-  ngOnInit(): void {
-    
-  }
+  constructor(
+    private studentService: StudentService,
+    private courseService: CourseService
+  ) {}
+
+ ngOnInit(): void {
+  this.courseService.getAllCourses(0, 100).subscribe({
+    next: (data) => {
+      this.availableCourses = data.content.map((c: CourseDTO) => c.name);
+    },
+    error: (err) => {
+      console.error('Error fetching courses:', err);
+    }
+  });
+}
+
 
   getAllStudents(): void {
     this.studentService.getAllStudents(this.currentPage, this.pageSize).subscribe({
       next: (data) => {
         this.filteredStudents = data.content ?? [];
         this.totalPages = data.totalPages;
+        this.showTable = true;
         this.setMessage('');
       },
       error: (err) => {
         console.error('Error fetching students:', err);
         this.setMessage('Error fetching students');
         this.filteredStudents = [];
+        this.showTable = false;
       }
     });
   }
@@ -52,6 +69,7 @@ export class StudentComponent implements OnInit {
     if (!this.searchQuery.trim()) {
       this.setMessage('Please enter a search term.');
       this.filteredStudents = [];
+      this.showTable = false;
       return;
     }
 
@@ -60,11 +78,13 @@ export class StudentComponent implements OnInit {
         this.filteredStudents = data.content ?? [];
         this.totalPages = data.totalPages;
         this.setMessage(data.content?.length ? '' : 'No students found.');
+        this.showTable = false;
       },
       error: (err) => {
         console.error('Search error:', err);
         this.setMessage('Error searching students');
         this.filteredStudents = [];
+        this.showTable = false;
       }
     });
   }
@@ -86,11 +106,13 @@ export class StudentComponent implements OnInit {
           this.setMessage('Student not found');
           this.filteredStudents = [];
         }
+        this.showTable = false;
       },
       error: (err) => {
         console.error('Error fetching student:', err);
         this.setMessage('Student not found');
         this.filteredStudents = [];
+        this.showTable = false;
       }
     });
   }
@@ -135,13 +157,13 @@ export class StudentComponent implements OnInit {
   toggleAddForm(): void {
     this.showAddForm = !this.showAddForm;
     this.setMessage('');
-    this.addForm = { name: '', dob: '', dept: '' };
+    this.addForm = { name: '', dob: '', dept: '', courseNames: [] };
   }
 
   toggleUpdateForm(): void {
     this.showUpdateForm = !this.showUpdateForm;
     this.setMessage('');
-    this.updateForm = { name: '', dob: '', dept: '' };
+    this.updateForm = { name: '', dob: '', dept: '', courseNames: [] };
   }
 
   submitAdd(): void {
@@ -151,7 +173,7 @@ export class StudentComponent implements OnInit {
     }
 
     this.studentService.addStudent(this.addForm).subscribe({
-      next: (res) => {
+      next: () => {
         this.setMessage('Student added successfully');
         this.toggleAddForm();
         this.getAllStudents();
@@ -171,7 +193,7 @@ export class StudentComponent implements OnInit {
     }
 
     this.studentService.updateStudent(id, this.updateForm).subscribe({
-      next: (res) => {
+      next: () => {
         this.setMessage('Student updated successfully');
         this.toggleUpdateForm();
         this.getAllStudents();
@@ -186,14 +208,14 @@ export class StudentComponent implements OnInit {
   previousPage(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
-      this.searchQuery ? this.searchStudents() : this.getAllStudents();
+      this.getAllStudents();
     }
   }
 
   nextPage(): void {
     if (this.currentPage + 1 < this.totalPages) {
       this.currentPage++;
-      this.searchQuery ? this.searchStudents() : this.getAllStudents();
+      this.getAllStudents();
     }
   }
 

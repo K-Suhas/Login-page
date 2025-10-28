@@ -54,6 +54,12 @@
       <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
     </div>
     <div class="form-row">
+      <label>Select Courses:</label>
+      <select multiple [(ngModel)]="addForm.courseNames">
+        <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
+      </select>
+    </div>
+    <div class="form-row">
       <button class="primary-button" (click)="submitAdd()">Submit</button>
       <button class="secondary-button" (click)="toggleAddForm()">Cancel</button>
     </div>
@@ -64,9 +70,15 @@
     <h3>Update Student</h3>
     <div class="form-row">
       <input type="text" [(ngModel)]="updateId" placeholder="Student ID (required)" />
-      <input type="text" [(ngModel)]="updateForm.name" placeholder="Name (optional)" />
+      <input type="text" [(ngModel)]="updateForm.name" placeholder="Name " />
       <input type="date" [(ngModel)]="updateForm.dob" />
-      <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department (optional)" />
+      <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department " />
+    </div>
+    <div class="form-row">
+      <label>Update Courses:</label>
+      <select multiple [(ngModel)]="updateForm.courseNames">
+        <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
+      </select>
     </div>
     <div class="form-row">
       <button class="primary-button" (click)="submitUpdate()">Update</button>
@@ -75,7 +87,7 @@
   </div>
 
   <!-- Table -->
-  <table *ngIf="filteredStudents && filteredStudents.length > 0">
+  <table *ngIf="showTable && filteredStudents.length > 0">
     <thead>
       <tr>
         <th>ID</th>
@@ -103,7 +115,7 @@
   </table>
 
   <!-- Pagination -->
-  <div class="pagination-controls" *ngIf="totalPages > 1">
+  <div class="pagination-controls" *ngIf="showTable && totalPages > 1">
     <button (click)="previousPage()" [disabled]="currentPage === 0">Previous</button>
     <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
     <button (click)="nextPage()" [disabled]="currentPage + 1 >= totalPages">Next</button>
