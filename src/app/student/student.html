@@ -2,48 +2,31 @@
   <h2>Student Management</h2>
 
   <!-- Search and Clear -->
-  <div class="action-row">
-    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, ID or DOB (yyyy-MM-dd)" />
-    <button class="secondary-button" (click)="searchStudents()">
-      <i class="fas fa-search"></i> Search
-    </button>
-    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllStudents()">
-      <i class="fas fa-times"></i> Clear
-    </button>
-  </div>
+<div class="search-row">
+  <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, ID or DOB (yyyy-MM-dd)" />
+  <button class="secondary-button" (click)="searchStudents()">
+    <i class="fas fa-search"></i> Search
+  </button>
+  <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllStudents()">
+    <i class="fas fa-times"></i> Clear
+  </button>
+</div>
 
-  <!-- Get All -->
-  <div class="action-row">
-    <button class="primary-button" (click)="getAllStudents()">
-      <i class="fas fa-list"></i> Get All Students
+  <!-- Unified Action Buttons -->
+  <div class="action-row unified-buttons">
+    
+    <button class="primary-button large-button" (click)="toggleAddForm()">
+      <i class="fas fa-list"></i> Add Student
     </button>
-  </div>
-
-  <!-- Get by ID -->
-  <div class="action-row">
-    <input type="text" [(ngModel)]="searchId" placeholder="Enter Student ID" />
-    <button class="secondary-button" (click)="getStudentById()">
-      <i class="fas fa-search"></i> Get Student
+    <button class="primary-button large-button" (click)="getAllStudents()">
+      <i class="fas fa-plus"></i> Get All Students
     </button>
-  </div>
-
-  <!-- Add / Update -->
-  <div class="action-row">
-    <button class="primary-button" (click)="toggleAddForm()">
-      <i class="fas fa-plus"></i> Add Student
-    </button>
-    <button class="secondary-button" (click)="toggleUpdateForm()">
+    <button class="primary-button large-button" (click)="toggleUpdateForm()">
       <i class="fas fa-edit"></i> Update Student
     </button>
   </div>
 
-  <!-- Delete -->
-  <div class="action-row">
-    <input type="text" [(ngModel)]="deleteId" placeholder="ID to delete" />
-    <button class="danger-button" (click)="deleteById()">
-      <i class="fas fa-trash"></i> Delete Student
-    </button>
-  </div>
+ 
 
   <!-- Add Form -->
   <div *ngIf="showAddForm" class="form-group">
@@ -54,8 +37,9 @@
       <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
     </div>
     <div class="form-row">
-      <label>Select Courses:</label>
-      <select multiple [(ngModel)]="addForm.courseNames">
+      <label>Select Course:</label>
+      <select [(ngModel)]="addForm.courseNames" class="dropdown">
+        <option value="" disabled selected>Select a course</option>
         <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
       </select>
     </div>
@@ -70,13 +54,14 @@
     <h3>Update Student</h3>
     <div class="form-row">
       <input type="text" [(ngModel)]="updateId" placeholder="Student ID (required)" />
-      <input type="text" [(ngModel)]="updateForm.name" placeholder="Name " />
+      <input type="text" [(ngModel)]="updateForm.name" placeholder="Name" />
       <input type="date" [(ngModel)]="updateForm.dob" />
-      <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department " />
+      <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department" />
     </div>
     <div class="form-row">
-      <label>Update Courses:</label>
-      <select multiple [(ngModel)]="updateForm.courseNames">
+      <label>Update Course:</label>
+      <select [(ngModel)]="updateForm.courseNames" class="dropdown">
+        <option value="" disabled selected>Select a course</option>
         <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
       </select>
     </div>
@@ -90,7 +75,7 @@
   <table *ngIf="showTable && filteredStudents.length > 0">
     <thead>
       <tr>
-        <th>ID</th>
+        <th><i class="fas fa-id-badge"></i>ID</th>
         <th>Name</th>
         <th>DOB</th>
         <th>Department</th>

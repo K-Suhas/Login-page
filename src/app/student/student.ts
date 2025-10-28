@@ -78,7 +78,7 @@ export class StudentComponent implements OnInit {
         this.filteredStudents = data.content ?? [];
         this.totalPages = data.totalPages;
         this.setMessage(data.content?.length ? '' : 'No students found.');
-        this.showTable = false;
+        this.showTable = true;
       },
       error: (err) => {
         console.error('Search error:', err);

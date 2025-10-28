@@ -1,50 +1,33 @@
 <div class="container">
   <h2>Course Management</h2>
 
-  <!-- Search and Clear -->
-  <div class="action-row">
-    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name or ID" />
-    <button class="secondary-button" (click)="searchCourses()">
-      <i class="fas fa-search"></i> Search
-    </button>
-    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllCourses()">
-      <i class="fas fa-times"></i> Clear
-    </button>
-  </div>
+<!-- Search and Clear -->
+<div class="search-row">
+  <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name or ID" />
+  <button class="secondary-button" (click)="searchCourses()">
+    <i class="fas fa-search"></i> Search
+  </button>
+  <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllCourses()">
+    <i class="fas fa-times"></i> Clear
+  </button>
+</div>
 
-  <!-- Get All -->
-  <div class="action-row">
-    <button class="primary-button" (click)="getAllCourses()">
-      <i class="fas fa-list"></i> Get All Courses
-    </button>
-  </div>
 
-  <!-- Get by ID -->
-  <div class="action-row">
-    <input type="text" [(ngModel)]="searchId" placeholder="Enter Course ID" />
-    <button class="secondary-button" (click)="getCourseById()">
-      <i class="fas fa-search"></i> Get Course
-    </button>
-  </div>
+  <!-- Unified Action Buttons -->
+<div class="action-row unified-buttons">
+  <button class="primary-button large-button" (click)="toggleAddForm()">
+    <i class="fas fa-plus"></i> Add Course
+  </button>
+  <button class="primary-button large-button" (click)="getAllCourses()">
+    <i class="fas fa-list"></i> Get All Courses
+  </button>
+  <button class="primary-button large-button" (click)="toggleUpdateForm()">
+    <i class="fas fa-edit"></i> Update Course
+  </button>
+</div>
 
-  <!-- Add / Update -->
-  <div class="action-row">
-    <button class="primary-button" (click)="toggleAddForm()">
-      <i class="fas fa-plus"></i> Add Course
-    </button>
-    <button class="secondary-button" (click)="toggleUpdateForm()">
-      <i class="fas fa-edit"></i> Update Course
-    </button>
-  </div>
 
-  <!-- Delete -->
-  <div class="action-row">
-    <input type="text" [(ngModel)]="deleteId" placeholder="ID to delete" />
-    <button class="danger-button" (click)="deleteById()">
-      <i class="fas fa-trash"></i> Delete Course
-    </button>
-  </div>
-
+ 
   <!-- Add Form -->
   <div *ngIf="showAddForm" class="form-group">
     <h3>Add New Course</h3>
@@ -74,10 +57,11 @@
  <table *ngIf="filteredCourses && filteredCourses.length > 0">
   <thead>
     <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Enrolled Students</th>
-      <th>Actions</th>
+      <th><i class="fas fa-id-badge"></i> ID</th>
+      <th><i class="fas fa-book"></i> Name</th>
+      <th><i class="fas fa-users"></i> Enrolled Students</th>
+      <th><i class="fas fa-cogs"></i> Actions</th>
+
     </tr>
   </thead>
   <tbody>
