@@ -8,6 +8,7 @@ export interface StudentDTO {
   name: string;
   dob?: string;
   dept?: string;
+  courseNames?: string[];
 }
 
 @Injectable({

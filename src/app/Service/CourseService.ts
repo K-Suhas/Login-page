@@ -6,8 +6,7 @@ import { Observable } from 'rxjs';
 export interface CourseDTO {
   id?: number;
   name: string;
-  duration?: string;
-  description?: string;
+ studentNames?: string[];
 }
 
 @Injectable({

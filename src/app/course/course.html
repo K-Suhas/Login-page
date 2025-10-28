@@ -71,26 +71,29 @@
   </div>
 
   <!-- Table -->
-  <table *ngIf="filteredCourses && filteredCourses.length > 0">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let course of filteredCourses">
-        <td>{{ course.id }}</td>
-        <td>{{ course.name }}</td>
-        <td>
-          <button class="danger-button" (click)="deleteCourse(course.id)">
-            <i class="fas fa-trash"></i> Delete
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+ <table *ngIf="filteredCourses && filteredCourses.length > 0">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Enrolled Students</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let course of filteredCourses">
+      <td>{{ course.id }}</td>
+      <td>{{ course.name }}</td>
+      <td>{{ course.studentNames?.join(', ') || 'None' }}</td>
+      <td>
+        <button class="danger-button" (click)="deleteCourse(course.id)">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 
   <!-- Pagination -->
   <div class="pagination-controls" *ngIf="totalPages > 1">

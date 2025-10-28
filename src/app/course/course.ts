@@ -87,29 +87,30 @@ export class CourseComponent {
     });
   }
 
-  deleteCourse(id: number | undefined) {
-    if (id === undefined) {
-      this.message = 'Invalid course ID.';
-      return;
-    }
-
-    this.courseService.deleteCourse(id).subscribe({
-      next: msg => {
-        this.message = msg;
-        this.getAllCourses();
-      },
-      error: () => this.message = 'Deletion failed.'
-    });
+deleteCourse(id: number | undefined) {
+  if (id === undefined) {
+    this.message = 'Invalid course ID.';
+    return;
   }
+
+  this.courseService.deleteCourse(id).subscribe({
+    next: msg => {
+      this.message = msg;
+      this.getAllCourses();
+    },
+    error: () => this.message = 'Deletion failed.'
+  });
+}
+
 
   toggleAddForm() {
     this.showAddForm = !this.showAddForm;
-    this.addForm = { name: '', duration: '', description: '' };
+    this.addForm = { name: ''};
   }
 
   toggleUpdateForm() {
     this.showUpdateForm = !this.showUpdateForm;
-    this.updateForm = { name: '', duration: '', description: '' };
+    this.updateForm = { name: ''};
     this.updateId = '';
   }
 

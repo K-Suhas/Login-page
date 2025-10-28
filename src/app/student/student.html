@@ -1,27 +1,33 @@
 <div class="container">
   <h2>Student Management</h2>
 
-
+  <!-- Search and Clear -->
   <div class="action-row">
-    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, id or DOB (yyyy-MM-dd)" />
-    <button class="secondary-button" (click)="searchStudents()">Search</button>
-    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllStudents()">Clear</button>
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, ID or DOB (yyyy-MM-dd)" />
+    <button class="secondary-button" (click)="searchStudents()">
+      <i class="fas fa-search"></i> Search
+    </button>
+    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllStudents()">
+      <i class="fas fa-times"></i> Clear
+    </button>
   </div>
 
+  <!-- Get All -->
   <div class="action-row">
     <button class="primary-button" (click)="getAllStudents()">
       <i class="fas fa-list"></i> Get All Students
     </button>
   </div>
 
+  <!-- Get by ID -->
   <div class="action-row">
-    <input type="text" [(ngModel)]="searchId" placeholder="Enter Student ID"/>
+    <input type="text" [(ngModel)]="searchId" placeholder="Enter Student ID" />
     <button class="secondary-button" (click)="getStudentById()">
       <i class="fas fa-search"></i> Get Student
     </button>
   </div>
 
-  
+  <!-- Add / Update -->
   <div class="action-row">
     <button class="primary-button" (click)="toggleAddForm()">
       <i class="fas fa-plus"></i> Add Student
@@ -31,21 +37,21 @@
     </button>
   </div>
 
-
+  <!-- Delete -->
   <div class="action-row">
-    <input type="text" [(ngModel)]="deleteId" placeholder="ID to delete"/>
+    <input type="text" [(ngModel)]="deleteId" placeholder="ID to delete" />
     <button class="danger-button" (click)="deleteById()">
       <i class="fas fa-trash"></i> Delete Student
     </button>
   </div>
 
-
+  <!-- Add Form -->
   <div *ngIf="showAddForm" class="form-group">
     <h3>Add New Student</h3>
     <div class="form-row">
-      <input type="text" [(ngModel)]="addForm.name" placeholder="Name"/>
-      <input type="date" [(ngModel)]="addForm.dob"/>
-      <input type="text" [(ngModel)]="addForm.dept" placeholder="Department"/>
+      <input type="text" [(ngModel)]="addForm.name" placeholder="Name" />
+      <input type="date" [(ngModel)]="addForm.dob" />
+      <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
     </div>
     <div class="form-row">
       <button class="primary-button" (click)="submitAdd()">Submit</button>
@@ -53,13 +59,14 @@
     </div>
   </div>
 
+  <!-- Update Form -->
   <div *ngIf="showUpdateForm" class="form-group">
     <h3>Update Student</h3>
     <div class="form-row">
-      <input type="text" [(ngModel)]="updateId" placeholder="Student ID (required)"/>
-      <input type="text" [(ngModel)]="updateForm.name" placeholder="Name (optional)"/>
+      <input type="text" [(ngModel)]="updateId" placeholder="Student ID (required)" />
+      <input type="text" [(ngModel)]="updateForm.name" placeholder="Name (optional)" />
       <input type="date" [(ngModel)]="updateForm.dob" />
-      <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department (optional)"/>
+      <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department (optional)" />
     </div>
     <div class="form-row">
       <button class="primary-button" (click)="submitUpdate()">Update</button>
@@ -67,6 +74,7 @@
     </div>
   </div>
 
+  <!-- Table -->
   <table *ngIf="filteredStudents && filteredStudents.length > 0">
     <thead>
       <tr>
@@ -74,6 +82,7 @@
         <th>Name</th>
         <th>DOB</th>
         <th>Department</th>
+        <th>Courses</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -83,6 +92,7 @@
         <td>{{ student.name }}</td>
         <td>{{ student.dob | date:'mediumDate' }}</td>
         <td>{{ student.dept }}</td>
+        <td>{{ student.courseNames?.join(', ') || 'None' }}</td>
         <td>
           <button class="danger-button" (click)="deleteStudent(student.id)">
             <i class="fas fa-trash"></i> Delete
@@ -92,12 +102,14 @@
     </tbody>
   </table>
 
+  <!-- Pagination -->
   <div class="pagination-controls" *ngIf="totalPages > 1">
     <button (click)="previousPage()" [disabled]="currentPage === 0">Previous</button>
     <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
     <button (click)="nextPage()" [disabled]="currentPage + 1 >= totalPages">Next</button>
   </div>
 
+  <!-- Message -->
   <p class="message" 
      [class.success]="!message.includes('Error')" 
      [class.error]="message.includes('Error')" 
