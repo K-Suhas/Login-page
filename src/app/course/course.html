@@ -1,0 +1,109 @@
+<div class="container">
+  <h2>Course Management</h2>
+
+  <!-- Search and Clear -->
+  <div class="action-row">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name or ID" />
+    <button class="secondary-button" (click)="searchCourses()">
+      <i class="fas fa-search"></i> Search
+    </button>
+    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllCourses()">
+      <i class="fas fa-times"></i> Clear
+    </button>
+  </div>
+
+  <!-- Get All -->
+  <div class="action-row">
+    <button class="primary-button" (click)="getAllCourses()">
+      <i class="fas fa-list"></i> Get All Courses
+    </button>
+  </div>
+
+  <!-- Get by ID -->
+  <div class="action-row">
+    <input type="text" [(ngModel)]="searchId" placeholder="Enter Course ID" />
+    <button class="secondary-button" (click)="getCourseById()">
+      <i class="fas fa-search"></i> Get Course
+    </button>
+  </div>
+
+  <!-- Add / Update -->
+  <div class="action-row">
+    <button class="primary-button" (click)="toggleAddForm()">
+      <i class="fas fa-plus"></i> Add Course
+    </button>
+    <button class="secondary-button" (click)="toggleUpdateForm()">
+      <i class="fas fa-edit"></i> Update Course
+    </button>
+  </div>
+
+  <!-- Delete -->
+  <div class="action-row">
+    <input type="text" [(ngModel)]="deleteId" placeholder="ID to delete" />
+    <button class="danger-button" (click)="deleteById()">
+      <i class="fas fa-trash"></i> Delete Course
+    </button>
+  </div>
+
+  <!-- Add Form -->
+  <div *ngIf="showAddForm" class="form-group">
+    <h3>Add New Course</h3>
+    <div class="form-row">
+      <input type="text" [(ngModel)]="addForm.name" placeholder="Course Name" />
+    </div>
+    <div class="form-row">
+      <button class="primary-button" (click)="submitAdd()">Submit</button>
+      <button class="secondary-button" (click)="toggleAddForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Update Form -->
+  <div *ngIf="showUpdateForm" class="form-group">
+    <h3>Update Course</h3>
+    <div class="form-row">
+      <input type="text" [(ngModel)]="updateId" placeholder="Course ID (required)" />
+      <input type="text" [(ngModel)]="updateForm.name" placeholder="Name (optional)" />
+    </div>
+    <div class="form-row">
+      <button class="primary-button" (click)="submitUpdate()">Update</button>
+      <button class="secondary-button" (click)="toggleUpdateForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <table *ngIf="filteredCourses && filteredCourses.length > 0">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let course of filteredCourses">
+        <td>{{ course.id }}</td>
+        <td>{{ course.name }}</td>
+        <td>
+          <button class="danger-button" (click)="deleteCourse(course.id)">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Pagination -->
+  <div class="pagination-controls" *ngIf="totalPages > 1">
+    <button (click)="previousPage()" [disabled]="currentPage === 0">Previous</button>
+    <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage + 1 >= totalPages">Next</button>
+  </div>
+
+  <!-- Message -->
+  <p class="message" 
+     [class.success]="!message.includes('Error')" 
+     [class.error]="message.includes('Error')" 
+     *ngIf="message">
+    {{ message }}
+  </p>
+</div>

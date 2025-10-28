@@ -19,22 +19,22 @@ export class App {
   showLogin = true;
 
   constructor(public router: Router) {
-    // Subscribe to router events to handle view switching
+    
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      // Show login only on login or root route
+     
       this.showLogin = event.url === '/login' || event.url === '/';
     });
   }
 
   handleLogin() {
-    if (this.username === 'Suhas' && this.password === 'Suhas@02') {
-      this.router.navigate(['/students']);
-    } else {
-      this.message = 'Invalid credentials. Please try again.';
-    }
+  if (this.username === 'Suhas' && this.password === 'Suhas@02') {
+    this.router.navigate(['/home']); 
+  } else {
+    this.message = 'Invalid credentials. Please try again.';
   }
+}
 
   handleSignup() {
     if (this.username.trim() && this.password.trim()) {
