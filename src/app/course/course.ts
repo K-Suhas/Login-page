@@ -1,3 +1,4 @@
+// src/app/Component/CourseComponent.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,7 +27,7 @@ export class CourseComponent {
   showAddForm = false;
   showUpdateForm = false;
 
-  addForm: CourseDTO = { name: ''};
+  addForm: CourseDTO = { name: '' };
   updateForm: CourseDTO = { name: '' };
 
   message = '';
@@ -36,12 +37,14 @@ export class CourseComponent {
   getAllCourses() {
     this.courseService.getAllCourses(this.currentPage, this.pageSize).subscribe({
       next: data => {
-        this.courses = data.content;
         this.filteredCourses = data.content;
         this.totalPages = data.totalPages;
-        this.message = `${data.totalElements} course(s) found.`;
+        this.setMessage(`${data.totalElements} course(s) found.`);
       },
-      error: () => this.message = 'Error fetching courses.'
+      error: (err) => {
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
+      }
     });
   }
 
@@ -50,15 +53,18 @@ export class CourseComponent {
       next: data => {
         this.filteredCourses = data.content;
         this.totalPages = data.totalPages;
-        this.message = `${data.totalElements} course(s) matched.`;
+        this.setMessage(`${data.totalElements} course(s) matched.`);
       },
-      error: () => this.message = 'Search failed.'
+      error: (err) => {
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
+      }
     });
   }
 
   getCourseById() {
     if (!this.searchId.trim()) {
-      this.message = 'Please enter a Course ID.';
+      this.setMessage('Please enter a Course ID.');
       return;
     }
 
@@ -66,83 +72,99 @@ export class CourseComponent {
       next: data => {
         this.filteredCourses = [data];
         this.totalPages = 1;
-        this.message = 'Course found.';
+        this.setMessage('Course found.');
       },
-      error: () => this.message = 'Course not found.'
+      error: (err) => {
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
+      }
     });
   }
 
   deleteById() {
     if (!this.deleteId.trim()) {
-      this.message = 'Please enter a Course ID to delete.';
+      this.setMessage('Please enter a Course ID to delete.');
       return;
     }
 
     this.courseService.deleteCourse(+this.deleteId).subscribe({
       next: msg => {
-        this.message = msg;
+        this.setMessage(msg);
         this.getAllCourses();
       },
-      error: () => this.message = 'Deletion failed.'
+      error: (err) => {
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
+      }
     });
   }
 
-deleteCourse(id: number | undefined) {
-  if (id === undefined) {
-    this.message = 'Invalid course ID.';
-    return;
+  deleteCourse(id: number | undefined) {
+    if (id === undefined) {
+      this.setMessage('Invalid course ID.');
+      return;
+    }
+
+    this.courseService.deleteCourse(id).subscribe({
+      next: msg => {
+        this.setMessage(msg);
+        this.getAllCourses();
+      },
+      error: (err) => {
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
+      }
+    });
   }
-
-  this.courseService.deleteCourse(id).subscribe({
-    next: msg => {
-      this.message = msg;
-      this.getAllCourses();
-    },
-    error: () => this.message = 'Deletion failed.'
-  });
-}
-
 
   toggleAddForm() {
     this.showAddForm = !this.showAddForm;
-    this.addForm = { name: ''};
+    this.addForm = { name: '' };
+    this.setMessage('');
   }
 
   toggleUpdateForm() {
     this.showUpdateForm = !this.showUpdateForm;
-    this.updateForm = { name: ''};
+    this.updateForm = { name: '' };
     this.updateId = '';
+    this.setMessage('');
   }
 
   submitAdd() {
     if (!this.addForm.name.trim()) {
-      this.message = 'Course name is required.';
+      this.setMessage('Course name is required.');
       return;
     }
 
     this.courseService.addCourse(this.addForm).subscribe({
       next: msg => {
-        this.message = msg;
+        this.setMessage(msg);
         this.toggleAddForm();
         this.getAllCourses();
       },
-      error: () => this.message = 'Failed to add course.'
+      error: (err) => {
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
+      }
     });
   }
 
   submitUpdate() {
     if (!this.updateId.trim()) {
-      this.message = 'Course ID is required for update.';
+      this.setMessage('Course ID is required for update.');
       return;
     }
 
     this.courseService.updateCourse(+this.updateId, this.updateForm).subscribe({
       next: msg => {
-        this.message = msg;
+        this.setMessage(msg);
         this.toggleUpdateForm();
         this.getAllCourses();
       },
-      error: () => this.message = 'Update failed.'
+      error: (err) => {
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
+      }
     });
   }
 
@@ -159,4 +181,14 @@ deleteCourse(id: number | undefined) {
       this.getAllCourses();
     }
   }
+
+ private setMessage(msg: string): void {
+  this.message = msg;
+  if (msg && !msg.toLowerCase().includes('error')) {
+    setTimeout(() => {
+      this.message = '';
+    }, 3000);
+  }
+}
+
 }

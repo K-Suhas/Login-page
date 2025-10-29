@@ -16,6 +16,8 @@ export class StudentComponent implements OnInit {
   searchId = '';
   deleteId = '';
   updateId = '';
+  selectedCourse = '';
+  selectedUpdateCourse = '';
   message = '';
   showAddForm = false;
   showUpdateForm = false;
@@ -36,17 +38,17 @@ export class StudentComponent implements OnInit {
     private courseService: CourseService
   ) {}
 
- ngOnInit(): void {
-  this.courseService.getAllCourses(0, 100).subscribe({
-    next: (data) => {
-      this.availableCourses = data.content.map((c: CourseDTO) => c.name);
-    },
-    error: (err) => {
-      console.error('Error fetching courses:', err);
-    }
-  });
-}
-
+  ngOnInit(): void {
+    this.courseService.getAllCourses(0, 100).subscribe({
+      next: (data) => {
+        this.availableCourses = data.content.map((c: CourseDTO) => c.name);
+      },
+      error: (err) => {
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
+      }
+    });
+  }
 
   getAllStudents(): void {
     this.studentService.getAllStudents(this.currentPage, this.pageSize).subscribe({
@@ -57,8 +59,8 @@ export class StudentComponent implements OnInit {
         this.setMessage('');
       },
       error: (err) => {
-        console.error('Error fetching students:', err);
-        this.setMessage('Error fetching students');
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
         this.filteredStudents = [];
         this.showTable = false;
       }
@@ -81,8 +83,8 @@ export class StudentComponent implements OnInit {
         this.showTable = true;
       },
       error: (err) => {
-        console.error('Search error:', err);
-        this.setMessage('Error searching students');
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
         this.filteredStudents = [];
         this.showTable = false;
       }
@@ -98,19 +100,14 @@ export class StudentComponent implements OnInit {
 
     this.studentService.getStudentById(id).subscribe({
       next: (student) => {
-        if (student) {
-          this.filteredStudents = [student];
-          this.totalPages = 1;
-          this.setMessage('');
-        } else {
-          this.setMessage('Student not found');
-          this.filteredStudents = [];
-        }
+        this.filteredStudents = student ? [student] : [];
+        this.totalPages = 1;
+        this.setMessage(student ? '' : 'Student not found');
         this.showTable = false;
       },
       error: (err) => {
-        console.error('Error fetching student:', err);
-        this.setMessage('Student not found');
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
         this.filteredStudents = [];
         this.showTable = false;
       }
@@ -130,8 +127,8 @@ export class StudentComponent implements OnInit {
         this.getAllStudents();
       },
       error: (err) => {
-        console.error('Error deleting student:', err);
-        this.setMessage('Error deleting student');
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
       }
     });
   }
@@ -148,8 +145,8 @@ export class StudentComponent implements OnInit {
         this.getAllStudents();
       },
       error: (err) => {
-        console.error('Error deleting student:', err);
-        this.setMessage('Error deleting student');
+        console.error('Error:', err.message);
+        this.setMessage(err.message);
       }
     });
   }
@@ -158,19 +155,29 @@ export class StudentComponent implements OnInit {
     this.showAddForm = !this.showAddForm;
     this.setMessage('');
     this.addForm = { name: '', dob: '', dept: '', courseNames: [] };
+    this.selectedCourse = '';
   }
 
   toggleUpdateForm(): void {
     this.showUpdateForm = !this.showUpdateForm;
     this.setMessage('');
     this.updateForm = { name: '', dob: '', dept: '', courseNames: [] };
+    this.selectedUpdateCourse = '';
+    this.updateId = '';
   }
 
   submitAdd(): void {
-    if (!this.addForm.name || !this.addForm.dob || !this.addForm.dept) {
+    if (
+      !this.addForm.name?.trim() ||
+      !this.addForm.dob ||
+      !this.addForm.dept?.trim() ||
+      !this.selectedCourse?.trim()
+    ) {
       this.setMessage('All fields are required');
       return;
     }
+
+    this.addForm.courseNames = [this.selectedCourse];
 
     this.studentService.addStudent(this.addForm).subscribe({
       next: () => {
@@ -179,18 +186,26 @@ export class StudentComponent implements OnInit {
         this.getAllStudents();
       },
       error: (err) => {
-        console.error('Add error:', err);
-        this.setMessage('Error adding student');
+        console.error('Add error:', err.message);
+        this.setMessage(err.message);
       }
     });
   }
 
   submitUpdate(): void {
     const id = Number(this.updateId);
-    if (!id) {
-      this.setMessage('Invalid ID');
+    if (
+      !id ||
+      !this.updateForm.name?.trim() ||
+      !this.updateForm.dob ||
+      !this.updateForm.dept?.trim() ||
+      !this.selectedUpdateCourse?.trim()
+    ) {
+      this.setMessage('All fields are required for update');
       return;
     }
+
+    this.updateForm.courseNames = [this.selectedUpdateCourse];
 
     this.studentService.updateStudent(id, this.updateForm).subscribe({
       next: () => {
@@ -199,8 +214,8 @@ export class StudentComponent implements OnInit {
         this.getAllStudents();
       },
       error: (err) => {
-        console.error('Update error:', err);
-        this.setMessage('Error updating student');
+        console.error('Update error:', err.message);
+        this.setMessage(err.message);
       }
     });
   }

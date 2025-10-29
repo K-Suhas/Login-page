@@ -1,33 +1,30 @@
 <div class="container">
   <h2>Course Management</h2>
 
-<!-- Search and Clear -->
-<div class="search-row">
-  <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name or ID" />
-  <button class="secondary-button" (click)="searchCourses()">
-    <i class="fas fa-search"></i> Search
-  </button>
-  <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllCourses()">
-    <i class="fas fa-times"></i> Clear
-  </button>
-</div>
-
+  <!-- Search and Clear -->
+  <div class="search-row">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name or ID" />
+    <button class="secondary-button" (click)="searchCourses()">
+      <i class="fas fa-search"></i> Search
+    </button>
+    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllCourses()">
+      <i class="fas fa-times"></i> Clear
+    </button>
+  </div>
 
   <!-- Unified Action Buttons -->
-<div class="action-row unified-buttons">
-  <button class="primary-button large-button" (click)="toggleAddForm()">
-    <i class="fas fa-plus"></i> Add Course
-  </button>
-  <button class="primary-button large-button" (click)="getAllCourses()">
-    <i class="fas fa-list"></i> Get All Courses
-  </button>
-  <button class="primary-button large-button" (click)="toggleUpdateForm()">
-    <i class="fas fa-edit"></i> Update Course
-  </button>
-</div>
+  <div class="action-row unified-buttons">
+    <button class="primary-button large-button" (click)="toggleAddForm()">
+      <i class="fas fa-plus"></i> Add Course
+    </button>
+    <button class="primary-button large-button" (click)="getAllCourses()">
+      <i class="fas fa-list"></i> Get All Courses
+    </button>
+    <button class="primary-button large-button" (click)="toggleUpdateForm()">
+      <i class="fas fa-edit"></i> Update Course
+    </button>
+  </div>
 
-
- 
   <!-- Add Form -->
   <div *ngIf="showAddForm" class="form-group">
     <h3>Add New Course</h3>
@@ -54,30 +51,28 @@
   </div>
 
   <!-- Table -->
- <table *ngIf="filteredCourses && filteredCourses.length > 0">
-  <thead>
-    <tr>
-      <th><i class="fas fa-id-badge"></i> ID</th>
-      <th><i class="fas fa-book"></i> Name</th>
-      <th><i class="fas fa-users"></i> Enrolled Students</th>
-      <th><i class="fas fa-cogs"></i> Actions</th>
-
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let course of filteredCourses">
-      <td>{{ course.id }}</td>
-      <td>{{ course.name }}</td>
-      <td>{{ course.studentNames?.join(', ') || 'None' }}</td>
-      <td>
-        <button class="danger-button" (click)="deleteCourse(course.id)">
-          <i class="fas fa-trash"></i> Delete
-        </button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
+  <table *ngIf="filteredCourses && filteredCourses.length > 0">
+    <thead>
+      <tr>
+        <th><i class="fas fa-id-badge"></i> ID</th>
+        <th><i class="fas fa-book"></i> Name</th>
+        <th><i class="fas fa-users"></i> Enrolled Students</th>
+        <th><i class="fas fa-cogs"></i> Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let course of filteredCourses">
+        <td>{{ course.id }}</td>
+        <td>{{ course.name }}</td>
+        <td>{{ course.studentNames?.join(', ') || 'None' }}</td>
+        <td>
+          <button class="danger-button" (click)="deleteCourse(course.id)">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
   <!-- Pagination -->
   <div class="pagination-controls" *ngIf="totalPages > 1">
@@ -86,11 +81,12 @@
     <button (click)="nextPage()" [disabled]="currentPage + 1 >= totalPages">Next</button>
   </div>
 
-  <!-- Message -->
-  <p class="message" 
-     [class.success]="!message.includes('Error')" 
-     [class.error]="message.includes('Error')" 
-     *ngIf="message">
-    {{ message }}
-  </p>
+<div *ngIf="message"
+     class="course-message-box"
+     [ngClass]="message.toLowerCase().includes('error') ? 'course-error' : 'course-success'">
+  <i class="fas" [ngClass]="message.toLowerCase().includes('error') ? 'fa-exclamation-circle' : 'fa-check-circle'"></i>
+  {{ message }}
+</div>
+
+
 </div>

@@ -2,19 +2,18 @@
   <h2>Student Management</h2>
 
   <!-- Search and Clear -->
-<div class="search-row">
-  <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, ID or DOB (yyyy-MM-dd)" />
-  <button class="secondary-button" (click)="searchStudents()">
-    <i class="fas fa-search"></i> Search
-  </button>
-  <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllStudents()">
-    <i class="fas fa-times"></i> Clear
-  </button>
-</div>
+  <div class="search-row">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, ID or DOB (yyyy-MM-dd)" />
+    <button class="secondary-button" (click)="searchStudents()">
+      <i class="fas fa-search"></i> Search
+    </button>
+    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllStudents()">
+      <i class="fas fa-times"></i> Clear
+    </button>
+  </div>
 
   <!-- Unified Action Buttons -->
   <div class="action-row unified-buttons">
-    
     <button class="primary-button large-button" (click)="toggleAddForm()">
       <i class="fas fa-list"></i> Add Student
     </button>
@@ -26,8 +25,6 @@
     </button>
   </div>
 
- 
-
   <!-- Add Form -->
   <div *ngIf="showAddForm" class="form-group">
     <h3>Add New Student</h3>
@@ -38,7 +35,7 @@
     </div>
     <div class="form-row">
       <label>Select Course:</label>
-      <select [(ngModel)]="addForm.courseNames" class="dropdown">
+      <select [(ngModel)]="selectedCourse" class="dropdown">
         <option value="" disabled selected>Select a course</option>
         <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
       </select>
@@ -60,7 +57,7 @@
     </div>
     <div class="form-row">
       <label>Update Course:</label>
-      <select [(ngModel)]="updateForm.courseNames" class="dropdown">
+      <select [(ngModel)]="selectedUpdateCourse" class="dropdown">
         <option value="" disabled selected>Select a course</option>
         <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
       </select>
@@ -107,10 +104,14 @@
   </div>
 
   <!-- Message -->
-  <p class="message" 
-     [class.success]="!message.includes('Error')" 
-     [class.error]="message.includes('Error')" 
-     *ngIf="message">
+  <div *ngIf="message" class="message-box" [ngClass]="{
+    'success': !message.includes('Error'),
+    'error': message.includes('Error')
+  }">
+    <i class="fas" [ngClass]="{
+      'fa-check-circle': !message.includes('Error'),
+      'fa-exclamation-circle': message.includes('Error')
+    }"></i>
     {{ message }}
-  </p>
+  </div>
 </div>
