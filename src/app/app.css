@@ -22,63 +22,10 @@ h1 {
   font-size: 16px;
 }
 
-.form-group {
-  margin-bottom: 20px;
-}
-
-.input-group {
-  margin-bottom: 15px;
-}
-
-input {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-sizing: border-box;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-input:focus {
-  border-color: #3498db;
-  outline: none;
-  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
-}
-
-.button-container {
+.g_id_signin {
   display: flex;
-  gap: 10px;
+  justify-content: center;
   margin-top: 20px;
-}
-
-button {
-  padding: 12px 25px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: auto;
-}
-
-.primary-button {
-  background-color: #3498db;
-  color: white;
-}
-
-.primary-button:hover {
-  background-color: #2980b9;
-}
-
-.secondary-button {
-  background-color: #ecf0f1;
-  color: #2c3e50;
-}
-
-.secondary-button:hover {
-  background-color: #bdc3c7;
 }
 
 .message {
@@ -94,9 +41,20 @@ button {
   color: #c62828;
 }
 
-.success {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+.logout-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #c0392b;
 }
 
 body {

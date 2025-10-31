@@ -151,74 +151,91 @@ export class StudentComponent implements OnInit {
     });
   }
 
-  toggleAddForm(): void {
-    this.showAddForm = !this.showAddForm;
-    this.setMessage('');
-    this.addForm = { name: '', dob: '', dept: '', courseNames: [] };
-    this.selectedCourse = '';
+toggleAddForm(): void {
+  this.showAddForm = !this.showAddForm;
+  this.setMessage('');
+
+  const loggedInUser = localStorage.getItem('user');
+  const user = loggedInUser ? JSON.parse(loggedInUser) : null;
+
+  this.addForm = {
+  name: '',
+  dob: '',
+  dept: '',
+  courseNames: []
+};
+
+
+  this.selectedCourse = '';
+}
+
+
+
+ toggleUpdateForm(): void {
+  this.showUpdateForm = !this.showUpdateForm;
+  this.setMessage('');
+  this.updateForm = {
+    name: '',
+    dob: '',
+    dept: '',
+    courseNames: []
+  };
+  this.selectedUpdateCourse = '';
+  this.updateId = '';
+}
+
+submitAdd(): void {
+  if (
+    !this.addForm.name?.trim() ||
+    !this.selectedCourse?.trim()
+  ) {
+    this.setMessage('Name and course are required');
+    return;
   }
 
-  toggleUpdateForm(): void {
-    this.showUpdateForm = !this.showUpdateForm;
-    this.setMessage('');
-    this.updateForm = { name: '', dob: '', dept: '', courseNames: [] };
-    this.selectedUpdateCourse = '';
-    this.updateId = '';
-  }
+  this.addForm.courseNames = [this.selectedCourse];
 
-  submitAdd(): void {
-    if (
-      !this.addForm.name?.trim() ||
-      !this.addForm.dob ||
-      !this.addForm.dept?.trim() ||
-      !this.selectedCourse?.trim()
-    ) {
-      this.setMessage('All fields are required');
-      return;
+  this.studentService.addStudent(this.addForm).subscribe({
+    next: () => {
+      this.setMessage('Student added successfully');
+      this.toggleAddForm();
+      this.getAllStudents();
+    },
+    error: (err) => {
+      console.error('Add error:', err.message);
+      this.setMessage(err.message);
     }
+  });
+}
 
-    this.addForm.courseNames = [this.selectedCourse];
-
-    this.studentService.addStudent(this.addForm).subscribe({
-      next: () => {
-        this.setMessage('Student added successfully');
-        this.toggleAddForm();
-        this.getAllStudents();
-      },
-      error: (err) => {
-        console.error('Add error:', err.message);
-        this.setMessage(err.message);
-      }
-    });
-  }
 
   submitUpdate(): void {
-    const id = Number(this.updateId);
-    if (
-      !id ||
-      !this.updateForm.name?.trim() ||
-      !this.updateForm.dob ||
-      !this.updateForm.dept?.trim() ||
-      !this.selectedUpdateCourse?.trim()
-    ) {
-      this.setMessage('All fields are required for update');
-      return;
-    }
-
-    this.updateForm.courseNames = [this.selectedUpdateCourse];
-
-    this.studentService.updateStudent(id, this.updateForm).subscribe({
-      next: () => {
-        this.setMessage('Student updated successfully');
-        this.toggleUpdateForm();
-        this.getAllStudents();
-      },
-      error: (err) => {
-        console.error('Update error:', err.message);
-        this.setMessage(err.message);
-      }
-    });
+  const id = Number(this.updateId);
+  if (
+    !id ||
+    !this.updateForm.name?.trim() ||
+    !this.updateForm.dob ||
+    !this.updateForm.dept?.trim() ||
+    !this.selectedUpdateCourse?.trim()
+  ) {
+    this.setMessage('All fields are required for update');
+    return;
   }
+
+  this.updateForm.courseNames = [this.selectedUpdateCourse];
+
+  this.studentService.updateStudent(id, this.updateForm).subscribe({
+    next: () => {
+      this.setMessage('Student updated successfully');
+      this.toggleUpdateForm();
+      this.getAllStudents();
+    },
+    error: (err) => {
+      console.error('Update error:', err.message);
+      this.setMessage(err.message);
+    }
+  });
+}
 
   previousPage(): void {
     if (this.currentPage > 0) {

@@ -24,27 +24,28 @@
       <i class="fas fa-edit"></i> Update Student
     </button>
   </div>
-
-  <!-- Add Form -->
-  <div *ngIf="showAddForm" class="form-group">
-    <h3>Add New Student</h3>
-    <div class="form-row">
-      <input type="text" [(ngModel)]="addForm.name" placeholder="Name" />
-      <input type="date" [(ngModel)]="addForm.dob" />
-      <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
-    </div>
-    <div class="form-row">
-      <label>Select Course:</label>
-      <select [(ngModel)]="selectedCourse" class="dropdown">
-        <option value="" disabled selected>Select a course</option>
-        <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <button class="primary-button" (click)="submitAdd()">Submit</button>
-      <button class="secondary-button" (click)="toggleAddForm()">Cancel</button>
-    </div>
+<!-- Add Form -->
+<div *ngIf="showAddForm" class="form-group">
+  <h3>Add New Student</h3>
+  <div class="form-row">
+    <input type="text" [(ngModel)]="addForm.name" placeholder="Name" />
+   
+    <input type="date" [(ngModel)]="addForm.dob" />
+    <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
   </div>
+  <div class="form-row">
+    <label>Select Course:</label>
+    <select [(ngModel)]="selectedCourse" class="dropdown">
+      <option value="" disabled selected>Select a course</option>
+      <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <button class="primary-button" (click)="submitAdd()">Submit</button>
+    <button class="secondary-button" (click)="toggleAddForm()">Cancel</button>
+  </div>
+</div>
+
 
   <!-- Update Form -->
   <div *ngIf="showUpdateForm" class="form-group">

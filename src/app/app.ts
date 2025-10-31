@@ -1,8 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+
+declare global {
+  interface Window {
+    google: any;
+    handleCredentialResponse: (response: any) => void;
+  }
+}
 
 @Component({
   selector: 'app-root',
@@ -11,46 +18,97 @@ import { filter } from 'rxjs/operators';
   styleUrls: ['./app.css'],
   imports: [CommonModule, FormsModule, RouterModule]
 })
-export class App {
-  username = '';
-  password = '';
-  isSignedUp = false;
+export class App implements OnInit, AfterViewInit {
   message = '';
   showLogin = true;
 
-  constructor(public router: Router) {
-    
+  constructor(public router: Router) {}
+
+  ngOnInit() {
+    // Define global callback early
+    window.handleCredentialResponse = (response: any) => {
+      console.log('Google token received:', response.credential);
+      this.verifyTokenWithBackend(response.credential);
+    };
+
+    // Sync login state with route and localStorage
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-     
-      this.showLogin = event.url === '/login' || event.url === '/';
+    ).subscribe(() => {
+      const isLoginRoute = this.router.url === '/login';
+      const isLoggedIn = !!localStorage.getItem('user');
+      this.showLogin = isLoginRoute && !isLoggedIn;
+
+      // Optional: redirect logged-in users away from login
+      if (isLoginRoute && isLoggedIn) {
+        this.router.navigate(['/home']);
+      }
+
+      // Re-render button if needed
+      if (this.showLogin) {
+        setTimeout(() => this.renderGoogleButton(), 0);
+      }
     });
   }
 
-  handleLogin() {
-  if (this.username === 'Suhas' && this.password === 'Suhas@02') {
-    this.router.navigate(['/home']); 
-  } else {
-    this.message = 'Invalid credentials. Please try again.';
-  }
-}
+  ngAfterViewInit() {
+    console.log('ngAfterViewInit triggered');
 
-  handleSignup() {
-    if (this.username.trim() && this.password.trim()) {
-      this.message = `Account created for ${this.username}. You can now log in.`;
-      this.isSignedUp = false;
-      this.username = '';
-      this.password = '';
-    } else {
-      this.message = 'Please enter both username and password to sign up.';
+    // Initial render if login is visible
+    if (this.showLogin) {
+      setTimeout(() => this.renderGoogleButton(), 0);
     }
   }
 
-  switchToSignup() {
-    this.isSignedUp = true;
-    this.username = '';
-    this.password = '';
-    this.message = '';
+  renderGoogleButton() {
+    const container = document.getElementById('google-signin-button');
+    if (container && window.google?.accounts?.id) {
+      window.google.accounts.id.initialize({
+        client_id: '285503942744-fbj2r4pof7nhcq1259g1gk6c6abt0tu4.apps.googleusercontent.com',
+        callback: window.handleCredentialResponse
+      });
+
+      window.google.accounts.id.renderButton(container, {
+        theme: 'outline',
+        size: 'large',
+        text: 'signin_with',
+        shape: 'rectangular',
+        logo_alignment: 'left'
+      });
+    }
   }
+
+  verifyTokenWithBackend(token: string) {
+    fetch('http://localhost:8080/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Backend rejected token');
+      return res.json();
+    })
+    .then(user => {
+     localStorage.setItem('user', JSON.stringify(user));
+       this.router.navigate(['/home']);
+     this.showLogin = false;
+     })
+
+    .catch(err => {
+      this.message = 'Google login failed. Please try again.';
+      console.error('Login error:', err);
+    });
+  }
+
+  isLoggedIn(): boolean {
+  return !!localStorage.getItem('user');
+}
+
+logout() {
+  localStorage.removeItem('user');
+  this.router.navigate(['/login']);
+  this.showLogin = true;
+  setTimeout(() => this.renderGoogleButton(), 0);
+}
+
 }
