@@ -68,4 +68,11 @@ export class StudentService {
       catchError(this.handleError)
     );
   }
+  uploadBulkStudents(students: StudentDTO[]): Observable<any> {
+  return this.http.post(`${this.baseUrl}/bulk`, { students }).pipe(
+    catchError(this.handleError)
+  );
+}
+
+
 }

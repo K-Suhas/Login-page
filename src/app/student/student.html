@@ -27,9 +27,10 @@
 <!-- Add Form -->
 <div *ngIf="showAddForm" class="form-group">
   <h3>Add New Student</h3>
+
+  <!-- Single Student Form -->
   <div class="form-row">
     <input type="text" [(ngModel)]="addForm.name" placeholder="Name" />
-   
     <input type="date" [(ngModel)]="addForm.dob" />
     <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
   </div>
@@ -43,6 +44,16 @@
   <div class="form-row">
     <button class="primary-button" (click)="submitAdd()">Submit</button>
     <button class="secondary-button" (click)="toggleAddForm()">Cancel</button>
+  </div>
+
+  <!-- Divider -->
+  <hr />
+
+  <!-- Bulk Upload Section -->
+  <h4>Upload Multiple Students</h4>
+  <div class="form-row upload-center">
+    <input type="file" (change)="handleFileUpload($event)" accept=".csv" />
+    <button class="primary-button" (click)="submitBulkStudents()">Upload Students</button>
   </div>
 </div>
 
@@ -68,6 +79,9 @@
       <button class="secondary-button" (click)="toggleUpdateForm()">Cancel</button>
     </div>
   </div>
+
+
+
 
   <!-- Table -->
   <table *ngIf="showTable && filteredStudents.length > 0">

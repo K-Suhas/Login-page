@@ -3,6 +3,8 @@ import { StudentService, StudentDTO } from '../Service/StudentService';
 import { CourseDTO, CourseService } from '../Service/CourseService';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import * as Papa from 'papaparse';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-student',
@@ -150,6 +152,40 @@ export class StudentComponent implements OnInit {
       }
     });
   }
+  studentsToUpload: any[] = [];
+
+handleFileUpload(event: any): void {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: (result) => {
+      this.studentsToUpload = result.data.map((row: any, index: number) => {
+        const name = row['Name']?.trim();
+        const dob = this.convertToIso(row['DOB']);
+        const dept = row['Department']?.trim();
+        const courseNames = row['Course']?.split(',').map((c: string) => c.trim()).filter(Boolean);
+
+        return { name, dob, dept, courseNames };
+      });
+    },
+    error: (err) => {
+      console.error('CSV parsing error:', err);
+      this.setMessage('Failed to parse CSV file');
+    }
+  });
+}
+
+convertToIso(dob: string): string | null {
+  if (!dob) return null;
+  const [dd, mm, yyyy] = dob.split('-');
+  if (!dd || !mm || !yyyy) return null;
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+
 
 toggleAddForm(): void {
   this.showAddForm = !this.showAddForm;
@@ -164,7 +200,7 @@ toggleAddForm(): void {
   dept: '',
   courseNames: []
 };
-
+ 
 
   this.selectedCourse = '';
 }
@@ -221,6 +257,7 @@ submitAdd(): void {
     this.setMessage('All fields are required for update');
     return;
   }
+  
 
   this.updateForm.courseNames = [this.selectedUpdateCourse];
 
@@ -259,4 +296,46 @@ submitAdd(): void {
       }, 3000);
     }
   }
+ submitBulkStudents(): void {
+  if (!this.studentsToUpload.length) {
+    this.setMessage('No students to upload');
+    return;
+  }
+
+  const validStudents = this.studentsToUpload.filter(s =>
+    s.name && s.dob && s.dept && Array.isArray(s.courseNames) && s.courseNames.length
+  );
+
+  if (!validStudents.length) {
+    this.setMessage('All rows are missing required fields');
+    return;
+  }
+
+  this.studentService.uploadBulkStudents(validStudents).subscribe({
+  next: (res) => {
+    const msg = res?.message || res?.text || 'Students uploaded successfully';
+    this.setMessage(msg);
+    this.getAllStudents();
+  },
+  error: (err) => {
+    console.error('Bulk upload error:', err);
+
+    // Defensive fallback if success lands in error block
+    if (err?.error?.text === 'Students uploaded successfully') {
+      this.setMessage('Students uploaded successfully');
+      this.getAllStudents();
+      return;
+    }
+
+    if (Array.isArray(err.error)) {
+      this.setMessage('Errors:\n' + err.error.join('\n'));
+    } else {
+      this.setMessage(err.message || 'Upload failed');
+    }
+  }
+});
+
+}
+
+
 }
