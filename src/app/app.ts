@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { AuthService } from './Service/AuthService'; // adjust path if needed
 
 declare global {
   interface Window {
@@ -22,7 +23,7 @@ export class App implements OnInit, AfterViewInit {
   message = '';
   showLogin = true;
 
-  constructor(public router: Router) {}
+  constructor(public router: Router, private auth: AuthService) {}
 
   ngOnInit() {
     // Define global callback early
@@ -36,7 +37,7 @@ export class App implements OnInit, AfterViewInit {
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       const isLoginRoute = this.router.url === '/login';
-      const isLoggedIn = !!localStorage.getItem('user');
+      const isLoggedIn = this.auth.isLoggedIn();
       this.showLogin = isLoginRoute && !isLoggedIn;
 
       // Optional: redirect logged-in users away from login
@@ -82,18 +83,17 @@ export class App implements OnInit, AfterViewInit {
     fetch('http://localhost:8080/auth/google', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token })
+      body: JSON.stringify({ idToken: token }) // ✅ match backend key
     })
     .then(res => {
       if (!res.ok) throw new Error('Backend rejected token');
       return res.json();
     })
     .then(user => {
-     localStorage.setItem('user', JSON.stringify(user));
-       this.router.navigate(['/home']);
-     this.showLogin = false;
-     })
-
+      this.auth.setUser(user); // ✅ store user and role
+      this.router.navigate(['/home']);
+      this.showLogin = false;
+    })
     .catch(err => {
       this.message = 'Google login failed. Please try again.';
       console.error('Login error:', err);
@@ -101,14 +101,13 @@ export class App implements OnInit, AfterViewInit {
   }
 
   isLoggedIn(): boolean {
-  return !!localStorage.getItem('user');
-}
+    return this.auth.isLoggedIn();
+  }
 
-logout() {
-  localStorage.removeItem('user');
-  this.router.navigate(['/login']);
-  this.showLogin = true;
-  setTimeout(() => this.renderGoogleButton(), 0);
-}
-
+  logout() {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+    this.showLogin = true;
+    setTimeout(() => this.renderGoogleButton(), 0);
+  }
 }

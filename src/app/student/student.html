@@ -12,54 +12,47 @@
     </button>
   </div>
 
-  <!-- Unified Action Buttons -->
+  <!-- Action Buttons -->
   <div class="action-row unified-buttons">
-    <button class="primary-button large-button" (click)="toggleAddForm()">
-      <i class="fas fa-list"></i> Add Student
+    <button *ngIf="canEditStudents()" class="primary-button large-button" (click)="toggleAddForm()">
+      <i class="fas fa-plus"></i> Add Student
     </button>
     <button class="primary-button large-button" (click)="getAllStudents()">
-      <i class="fas fa-plus"></i> Get All Students
-    </button>
-    <button class="primary-button large-button" (click)="toggleUpdateForm()">
-      <i class="fas fa-edit"></i> Update Student
+      <i class="fas fa-list"></i> Get All Students
     </button>
   </div>
-<!-- Add Form -->
-<div *ngIf="showAddForm" class="form-group">
-  <h3>Add New Student</h3>
 
-  <!-- Single Student Form -->
-  <div class="form-row">
-    <input type="text" [(ngModel)]="addForm.name" placeholder="Name" />
-    <input type="date" [(ngModel)]="addForm.dob" />
-    <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
-  </div>
-  <div class="form-row">
-    <label>Select Course:</label>
-    <select [(ngModel)]="selectedCourse" class="dropdown">
-      <option value="" disabled selected>Select a course</option>
-      <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
-    </select>
-  </div>
-  <div class="form-row">
-    <button class="primary-button" (click)="submitAdd()">Submit</button>
-    <button class="secondary-button" (click)="toggleAddForm()">Cancel</button>
-  </div>
+  <!-- Add Form -->
+  <div *ngIf="canEditStudents() && showAddForm" class="form-group">
+    <h3>Add New Student</h3>
+    <div class="form-row">
+      <input type="text" [(ngModel)]="addForm.name" placeholder="Name" />
+      <input type="date" [(ngModel)]="addForm.dob" />
+      <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
+    </div>
+    <div class="form-row">
+      <label>Select Course:</label>
+      <select [(ngModel)]="selectedCourse" class="dropdown">
+        <option value="" disabled selected>Select a course</option>
+        <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <button class="primary-button" (click)="submitAdd()">Submit</button>
+      <button class="secondary-button" (click)="toggleAddForm()">Cancel</button>
+    </div>
 
-  <!-- Divider -->
-  <hr />
+    <hr />
 
-  <!-- Bulk Upload Section -->
-  <h4>Upload Multiple Students</h4>
-  <div class="form-row upload-center">
-    <input type="file" (change)="handleFileUpload($event)" accept=".csv" />
-    <button class="primary-button" (click)="submitBulkStudents()">Upload Students</button>
+    <h4>Upload Multiple Students</h4>
+    <div class="form-row upload-center">
+      <input type="file" (change)="handleFileUpload($event)" accept=".csv" />
+      <button class="primary-button" (click)="submitBulkStudents()">Upload Students</button>
+    </div>
   </div>
-</div>
-
 
   <!-- Update Form -->
-  <div *ngIf="showUpdateForm" class="form-group">
+  <div *ngIf="canEditStudents() && showUpdateForm" class="form-group">
     <h3>Update Student</h3>
     <div class="form-row">
       <input type="text" [(ngModel)]="updateId" placeholder="Student ID (required)" />
@@ -80,19 +73,16 @@
     </div>
   </div>
 
-
-
-
   <!-- Table -->
   <table *ngIf="showTable && filteredStudents.length > 0">
     <thead>
       <tr>
-        <th><i class="fas fa-id-badge"></i>ID</th>
+        <th>ID</th>
         <th>Name</th>
         <th>DOB</th>
         <th>Department</th>
         <th>Courses</th>
-        <th>Actions</th>
+        <th *ngIf="canEditStudents()">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -102,11 +92,18 @@
         <td>{{ student.dob | date:'mediumDate' }}</td>
         <td>{{ student.dept }}</td>
         <td>{{ student.courseNames?.join(', ') || 'None' }}</td>
-        <td>
-          <button class="danger-button" (click)="deleteStudent(student.id)">
-            <i class="fas fa-trash"></i> Delete
-          </button>
+        <td *ngIf="canEditStudents()">
+          <div class="row-actions">
+            <button class="danger-button" (click)="deleteStudent(student.id)">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+
+            <button class="primary-button" (click)="prepareUpdate(student)">
+              <i class="fas fa-edit"></i> Update
+            </button>
+          </div>
         </td>
+
       </tr>
     </tbody>
   </table>

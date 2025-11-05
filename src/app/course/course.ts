@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CourseService, CourseDTO } from '../Service/CourseService';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../Service/AuthService';
 
 @Component({
   selector: 'app-course',
@@ -32,7 +33,7 @@ export class CourseComponent {
 
   message = '';
 
-  constructor(private courseService: CourseService) {}
+  constructor(private courseService: CourseService, private auth: AuthService) {}
 
   getAllCourses() {
     this.courseService.getAllCourses(this.currentPage, this.pageSize).subscribe({
@@ -47,6 +48,17 @@ export class CourseComponent {
       }
     });
   }
+   canEditStudents(): boolean {
+  const role = this.auth.getRole();
+  return role !== null && ['ADMIN', 'TEACHER'].includes(role);
+}
+
+
+canManageCourses(): boolean {
+  const role = this.auth.getRole();
+  return role === 'ADMIN';
+}
+
 
   searchCourses() {
     this.courseService.searchCourses(this.searchQuery, this.currentPage, this.pageSize).subscribe({
@@ -60,6 +72,12 @@ export class CourseComponent {
         this.setMessage(err.message);
       }
     });
+  }
+    prepareUpdate(course: CourseDTO): void {
+    this.updateId = String(course.id);
+    this.updateForm = { name: course.name };
+    this.showUpdateForm = true;
+    this.setMessage('');
   }
 
   getCourseById() {

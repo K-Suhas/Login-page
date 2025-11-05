@@ -12,21 +12,18 @@
     </button>
   </div>
 
-  <!-- Unified Action Buttons -->
+  <!-- Action Buttons -->
   <div class="action-row unified-buttons">
-    <button class="primary-button large-button" (click)="toggleAddForm()">
+    <button *ngIf="canManageCourses()" class="primary-button large-button" (click)="toggleAddForm()">
       <i class="fas fa-plus"></i> Add Course
     </button>
     <button class="primary-button large-button" (click)="getAllCourses()">
       <i class="fas fa-list"></i> Get All Courses
     </button>
-    <button class="primary-button large-button" (click)="toggleUpdateForm()">
-      <i class="fas fa-edit"></i> Update Course
-    </button>
   </div>
 
   <!-- Add Form -->
-  <div *ngIf="showAddForm" class="form-group">
+  <div *ngIf="canManageCourses() && showAddForm" class="form-group">
     <h3>Add New Course</h3>
     <div class="form-row">
       <input type="text" [(ngModel)]="addForm.name" placeholder="Course Name" />
@@ -38,7 +35,7 @@
   </div>
 
   <!-- Update Form -->
-  <div *ngIf="showUpdateForm" class="form-group">
+  <div *ngIf="canManageCourses() && showUpdateForm" class="form-group">
     <h3>Update Course</h3>
     <div class="form-row">
       <input type="text" [(ngModel)]="updateId" placeholder="Course ID (required)" />
@@ -57,7 +54,7 @@
         <th><i class="fas fa-id-badge"></i> ID</th>
         <th><i class="fas fa-book"></i> Name</th>
         <th><i class="fas fa-users"></i> Enrolled Students</th>
-        <th><i class="fas fa-cogs"></i> Actions</th>
+        <th *ngIf="canManageCourses()"><i class="fas fa-cogs"></i> Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -65,11 +62,18 @@
         <td>{{ course.id }}</td>
         <td>{{ course.name }}</td>
         <td>{{ course.studentNames?.join(', ') || 'None' }}</td>
-        <td>
+        <td *ngIf="canManageCourses()">
+         <div class="row-actions">
           <button class="danger-button" (click)="deleteCourse(course.id)">
-            <i class="fas fa-trash"></i> Delete
+           <i class="fas fa-trash"></i> Delete
           </button>
+
+          <button class="primary-button" (click)="prepareUpdate(course)">
+            <i class="fas fa-edit"></i> Update
+          </button>
+        </div>
         </td>
+
       </tr>
     </tbody>
   </table>
@@ -81,12 +85,12 @@
     <button (click)="nextPage()" [disabled]="currentPage + 1 >= totalPages">Next</button>
   </div>
 
-<div *ngIf="message"
-     class="course-message-box"
-     [ngClass]="message.toLowerCase().includes('error') ? 'course-error' : 'course-success'">
-  <i class="fas" [ngClass]="message.toLowerCase().includes('error') ? 'fa-exclamation-circle' : 'fa-check-circle'"></i>
-  {{ message }}
-</div>
-
-
+  <!-- Message -->
+  <div *ngIf="message"
+       class="course-message-box"
+       [ngClass]="message.toLowerCase().includes('error') ? 'course-error' : 'course-success'">
+    <i class="fas"
+       [ngClass]="message.toLowerCase().includes('error') ? 'fa-exclamation-circle' : 'fa-check-circle'"></i>
+    {{ message }}
+  </div>
 </div>

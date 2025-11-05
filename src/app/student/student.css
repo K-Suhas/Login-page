@@ -245,3 +245,7 @@ tr:hover {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+.row-actions {
+  display: flex;
+  gap: 10px;
+}

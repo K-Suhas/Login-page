@@ -5,6 +5,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as Papa from 'papaparse';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../Service/AuthService';
 
 @Component({
   selector: 'app-student',
@@ -37,7 +38,8 @@ export class StudentComponent implements OnInit {
 
   constructor(
     private studentService: StudentService,
-    private courseService: CourseService
+    private courseService: CourseService,
+     private auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -68,6 +70,14 @@ export class StudentComponent implements OnInit {
       }
     });
   }
+  canEditStudents(): boolean {
+  const role = this.auth.getRole();
+  return role !== null && ['ADMIN', 'TEACHER'].includes(role);
+}
+canManageCourses(): boolean {
+  const role = this.auth.getRole();
+  return role === 'ADMIN';
+}
 
   searchStudents(): void {
     if (!this.searchQuery.trim()) {
@@ -92,6 +102,19 @@ export class StudentComponent implements OnInit {
       }
     });
   }
+  prepareUpdate(student: StudentDTO): void {
+  this.updateId = String(student.id);
+  this.updateForm = {
+    name: student.name,
+    dob: student.dob,
+    dept: student.dept,
+    courseNames: student.courseNames ?? []
+  };
+  this.selectedUpdateCourse = student.courseNames?.[0] ?? '';
+  this.showUpdateForm = true;
+  this.setMessage('');
+}
+
 
   getStudentById(): void {
     const id = Number(this.searchId);
