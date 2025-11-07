@@ -1,0 +1,138 @@
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+h2 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: center;
+}
+
+input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th {
+  background-color: #34495e;
+  color: white;
+  padding: 10px;
+}
+
+td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.unified-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+button {
+  padding: 8px 16px;
+  margin: 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.primary-button {
+  background-color: #3498db;
+  color: white;
+}
+
+.secondary-button {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.message-box.success {
+  background-color: #e0f7e9;
+  color: #2e7d32;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+.center-cell {
+  text-align: center;
+}
+
+.update-button {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.update-button:hover {
+  background-color: #059669;
+}
+.delete-section {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.delete-all-button {
+  background-color: #ef4444; /* Red */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.delete-all-button:hover {
+  background-color: #dc2626; /* Darker red on hover */
+}
+.marks-cell {
+  text-align: center;
+}
+
+.centered-table th,
+.centered-table td {
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+

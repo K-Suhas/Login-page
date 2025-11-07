@@ -4,7 +4,6 @@ import { CourseDTO, CourseService } from '../Service/CourseService';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as Papa from 'papaparse';
-import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../Service/AuthService';
 
 @Component({
@@ -35,12 +34,35 @@ export class StudentComponent implements OnInit {
   totalPages = 0;
 
   availableCourses: string[] = [];
+  studentsToUpload: any[] = [];
 
   constructor(
     private studentService: StudentService,
     private courseService: CourseService,
-     private auth: AuthService
+    private auth: AuthService
   ) {}
+  private setMessage(msg: string): void {
+  this.message = msg;
+  if (msg && !msg.toLowerCase().includes('error') && msg !== 'No students found.') {
+    setTimeout(() => {
+      this.message = '';
+    }, 3000);
+  }
+}
+
+previousPage(): void {
+  if (this.currentPage > 0) {
+    this.currentPage--;
+    this.getAllStudents();
+  }
+}
+
+nextPage(): void {
+  if (this.currentPage + 1 < this.totalPages) {
+    this.currentPage++;
+    this.getAllStudents();
+  }
+}
 
   ngOnInit(): void {
     this.courseService.getAllCourses(0, 100).subscribe({
@@ -48,8 +70,9 @@ export class StudentComponent implements OnInit {
         this.availableCourses = data.content.map((c: CourseDTO) => c.name);
       },
       error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+        const msg = err.error?.message || err.message || 'Failed to load courses';
+        console.error('Error:', msg);
+        this.setMessage(msg);
       }
     });
   }
@@ -63,21 +86,24 @@ export class StudentComponent implements OnInit {
         this.setMessage('');
       },
       error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+        const msg = err.error?.message || err.message || 'Failed to load students';
+        console.error('Error:', msg);
+        this.setMessage(msg);
         this.filteredStudents = [];
         this.showTable = false;
       }
     });
   }
+
   canEditStudents(): boolean {
-  const role = this.auth.getRole();
-  return role !== null && ['ADMIN', 'TEACHER'].includes(role);
-}
-canManageCourses(): boolean {
-  const role = this.auth.getRole();
-  return role === 'ADMIN';
-}
+    const role = this.auth.getRole();
+    return role !== null && ['ADMIN', 'TEACHER'].includes(role);
+  }
+
+  canManageCourses(): boolean {
+    const role = this.auth.getRole();
+    return role === 'ADMIN';
+  }
 
   searchStudents(): void {
     if (!this.searchQuery.trim()) {
@@ -95,26 +121,14 @@ canManageCourses(): boolean {
         this.showTable = true;
       },
       error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+        const msg = err.error?.message || err.message || 'Search failed';
+        console.error('Error:', msg);
+        this.setMessage(msg);
         this.filteredStudents = [];
         this.showTable = false;
       }
     });
   }
-  prepareUpdate(student: StudentDTO): void {
-  this.updateId = String(student.id);
-  this.updateForm = {
-    name: student.name,
-    dob: student.dob,
-    dept: student.dept,
-    courseNames: student.courseNames ?? []
-  };
-  this.selectedUpdateCourse = student.courseNames?.[0] ?? '';
-  this.showUpdateForm = true;
-  this.setMessage('');
-}
-
 
   getStudentById(): void {
     const id = Number(this.searchId);
@@ -131,8 +145,9 @@ canManageCourses(): boolean {
         this.showTable = false;
       },
       error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+        const msg = err.error?.message || err.message || 'Failed to fetch student';
+        console.error('Error:', msg);
+        this.setMessage(msg);
         this.filteredStudents = [];
         this.showTable = false;
       }
@@ -152,8 +167,9 @@ canManageCourses(): boolean {
         this.getAllStudents();
       },
       error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+        const msg = err.error?.message || err.message || 'Failed to delete student';
+        console.error('Error:', msg);
+        this.setMessage(msg);
       }
     });
   }
@@ -170,155 +186,116 @@ canManageCourses(): boolean {
         this.getAllStudents();
       },
       error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+        const msg = err.error?.message || err.message || 'Failed to delete student';
+        console.error('Error:', msg);
+        this.setMessage(msg);
       }
     });
   }
-  studentsToUpload: any[] = [];
 
-handleFileUpload(event: any): void {
-  const file = event.target.files[0];
-  if (!file) return;
+  handleFileUpload(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    complete: (result) => {
-      this.studentsToUpload = result.data.map((row: any, index: number) => {
-        const name = row['Name']?.trim();
-        const dob = this.convertToIso(row['DOB']);
-        const dept = row['Department']?.trim();
-        const courseNames = row['Course']?.split(',').map((c: string) => c.trim()).filter(Boolean);
-
-        return { name, dob, dept, courseNames };
-      });
-    },
-    error: (err) => {
-      console.error('CSV parsing error:', err);
-      this.setMessage('Failed to parse CSV file');
-    }
-  });
-}
-
-convertToIso(dob: string): string | null {
-  if (!dob) return null;
-  const [dd, mm, yyyy] = dob.split('-');
-  if (!dd || !mm || !yyyy) return null;
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-
-
-toggleAddForm(): void {
-  this.showAddForm = !this.showAddForm;
-  this.setMessage('');
-
-  const loggedInUser = localStorage.getItem('user');
-  const user = loggedInUser ? JSON.parse(loggedInUser) : null;
-
-  this.addForm = {
-  name: '',
-  dob: '',
-  dept: '',
-  courseNames: []
-};
- 
-
-  this.selectedCourse = '';
-}
-
-
-
- toggleUpdateForm(): void {
-  this.showUpdateForm = !this.showUpdateForm;
-  this.setMessage('');
-  this.updateForm = {
-    name: '',
-    dob: '',
-    dept: '',
-    courseNames: []
-  };
-  this.selectedUpdateCourse = '';
-  this.updateId = '';
-}
-
-submitAdd(): void {
-  if (
-    !this.addForm.name?.trim() ||
-    !this.selectedCourse?.trim()
-  ) {
-    this.setMessage('Name and course are required');
-    return;
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (result) => {
+        this.studentsToUpload = result.data.map((row: any) => {
+          const name = row['Name']?.trim();
+          const dob = this.convertToIso(row['DOB']);
+          const dept = row['Department']?.trim();
+          const courseNames = row['Course']?.split(',').map((c: string) => c.trim()).filter(Boolean);
+          return { name, dob, dept, courseNames };
+        });
+      },
+      error: (err) => {
+        console.error('CSV parsing error:', err);
+        this.setMessage('Failed to parse CSV file');
+      }
+    });
   }
 
-  this.addForm.courseNames = [this.selectedCourse];
+  convertToIso(dob: string): string | null {
+    if (!dob) return null;
+    const [dd, mm, yyyy] = dob.split('-');
+    if (!dd || !mm || !yyyy) return null;
+    return `${yyyy}-${mm}-${dd}`;
+  }
 
-  this.studentService.addStudent(this.addForm).subscribe({
-    next: () => {
-      this.setMessage('Student added successfully');
-      this.toggleAddForm();
-      this.getAllStudents();
-    },
-    error: (err) => {
-      console.error('Add error:', err.message);
-      this.setMessage(err.message);
+  toggleAddForm(): void {
+    this.showAddForm = !this.showAddForm;
+    this.setMessage('');
+    this.addForm = { name: '', dob: '', dept: '', courseNames: [] };
+    this.selectedCourse = '';
+  }
+
+  toggleUpdateForm(): void {
+    this.showUpdateForm = !this.showUpdateForm;
+    this.setMessage('');
+    this.updateForm = { name: '', dob: '', dept: '', courseNames: [] };
+    this.selectedUpdateCourse = '';
+    this.updateId = '';
+  }
+
+  prepareUpdate(student: StudentDTO): void {
+    this.updateId = String(student.id);
+    this.updateForm = {
+      name: student.name,
+      dob: student.dob,
+      dept: student.dept,
+      courseNames: student.courseNames ?? []
+    };
+    this.selectedUpdateCourse = student.courseNames?.[0] ?? '';
+    this.showUpdateForm = true;
+    this.setMessage('');
+  }
+
+  submitAdd(): void {
+    if (!this.addForm.name?.trim() || !this.selectedCourse?.trim()) {
+      this.setMessage('Name and course are required');
+      return;
     }
-  });
-}
 
+    this.addForm.courseNames = [this.selectedCourse];
+
+    this.studentService.addStudent(this.addForm).subscribe({
+      next: () => {
+        this.setMessage('Student added successfully');
+        this.toggleAddForm();
+        this.getAllStudents();
+      },
+      error: (err) => {
+        const msg = err.error?.message || err.message || 'Failed to add student';
+        console.error('Add error:', msg);
+        this.setMessage(msg);
+      }
+    });
+  }
 
   submitUpdate(): void {
-  const id = Number(this.updateId);
-  if (
-    !id ||
-    !this.updateForm.name?.trim() ||
-    !this.updateForm.dob ||
-    !this.updateForm.dept?.trim() ||
-    !this.selectedUpdateCourse?.trim()
-  ) {
-    this.setMessage('All fields are required for update');
-    return;
-  }
-  
-
-  this.updateForm.courseNames = [this.selectedUpdateCourse];
-
-  this.studentService.updateStudent(id, this.updateForm).subscribe({
-    next: () => {
-      this.setMessage('Student updated successfully');
-      this.toggleUpdateForm();
-      this.getAllStudents();
-    },
-    error: (err) => {
-      console.error('Update error:', err.message);
-      this.setMessage(err.message);
+    const id = Number(this.updateId);
+    if (!id || !this.updateForm.name?.trim() || !this.updateForm.dob || !this.updateForm.dept?.trim() || !this.selectedUpdateCourse?.trim()) {
+      this.setMessage('All fields are required for update');
+      return;
     }
-  });
-}
 
-  previousPage(): void {
-    if (this.currentPage > 0) {
-      this.currentPage--;
-      this.getAllStudents();
-    }
+    this.updateForm.courseNames = [this.selectedUpdateCourse];
+
+    this.studentService.updateStudent(id, this.updateForm).subscribe({
+      next: () => {
+        this.setMessage('Student updated successfully');
+        this.toggleUpdateForm();
+        this.getAllStudents();
+      },
+      error: (err) => {
+        const msg = err.error?.message || err.message || 'Failed to update student';
+        console.error('Update error:', msg);
+        this.setMessage(msg);
+      }
+    });
   }
 
-  nextPage(): void {
-    if (this.currentPage + 1 < this.totalPages) {
-      this.currentPage++;
-      this.getAllStudents();
-    }
-  }
-
-  private setMessage(msg: string): void {
-    this.message = msg;
-    if (msg && !msg.includes('Error') && msg !== 'No students found.') {
-      setTimeout(() => {
-        this.message = '';
-      }, 3000);
-    }
-  }
  submitBulkStudents(): void {
   if (!this.studentsToUpload.length) {
     this.setMessage('No students to upload');
@@ -335,30 +312,29 @@ submitAdd(): void {
   }
 
   this.studentService.uploadBulkStudents(validStudents).subscribe({
-  next: (res) => {
-    const msg = res?.message || res?.text || 'Students uploaded successfully';
-    this.setMessage(msg);
-    this.getAllStudents();
-  },
-  error: (err) => {
-    console.error('Bulk upload error:', err);
-
-    // Defensive fallback if success lands in error block
-    if (err?.error?.text === 'Students uploaded successfully') {
-      this.setMessage('Students uploaded successfully');
+    next: (res) => {
+      const msg = res?.message || res?.text || 'Students uploaded successfully';
+      this.setMessage(msg);
       this.getAllStudents();
-      return;
-    }
+    },
+    error: (err) => {
+      console.error('Bulk upload error:', err);
 
-    if (Array.isArray(err.error)) {
-      this.setMessage('Errors:\n' + err.error.join('\n'));
-    } else {
-      this.setMessage(err.message || 'Upload failed');
-    }
-  }
-});
+      // Defensive fallback if success lands in error block
+      if (err?.error?.text === 'Students uploaded successfully') {
+        this.setMessage('Students uploaded successfully');
+        this.getAllStudents();
+        return;
+      }
 
+      // Handle structured error list
+      if (Array.isArray(err.error)) {
+        this.setMessage('Errors:\n' + err.error.join('\n'));
+      } else {
+        const msg = err.error?.message || err.message || 'Upload failed';
+        this.setMessage(msg);
+      }
+    }
+  });
 }
-
-
 }

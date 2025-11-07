@@ -1,0 +1,109 @@
+<div class="container">
+  <h2>Marksheet Entry</h2>
+
+  <!-- Entry Form -->
+  <form [formGroup]="marksForm" (ngSubmit)="submitMarks()" *ngIf="canEditMarks()" class="form-group">
+    <div class="form-row">
+      <label>Student ID:</label>
+      <input formControlName="studentId" type="number" />
+      <label>Semester:</label>
+      <input formControlName="semester" type="number" />
+    </div>
+
+    <table formArrayName="subjects">
+      <tr><th>Subject</th><th>Marks</th></tr>
+      <tr *ngFor="let group of subjectsArray.controls; let i = index" [formGroupName]="i">
+        <td>{{ group.get('subjectName')?.value }}</td>
+        <td><input type="number" formControlName="marksObtained" /></td>
+      </tr>
+    </table>
+
+    <div class="unified-buttons">
+      <button type="submit" class="primary-button">Submit Marks</button>
+    </div>
+  </form>
+  <div class="summary-toggle">
+  <button  class="primary-button" (click)="toggleStudentSummary()">Students Result</button>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <h3>Search Marksheet</h3>
+    <label>Student ID:</label>
+    <input [(ngModel)]="searchStudentId" type="number" />
+    <label>Semester:</label>
+    <input [(ngModel)]="searchSemester" type="number" />
+    <button (click)="searchMarksheet()">Search</button>
+  </div>
+  
+
+
+  <!-- Summary Table -->
+  <div *ngIf="summary" class="form-group">
+    <h3>Marksheet Summary</h3>
+    <table>
+      <tr><th>Subject</th><th>Marks</th><th>Actions</th></tr>
+      <tr *ngFor="let s of summary.subjects">
+       <td>{{ s.subjectName }}</td>
+       <td class="marks-cell">{{ s.marksObtained }}</td>
+
+       <td class="center-cell">
+      <button class="update-button" (click)="updateSubjectMarks(s.subjectName)">Update</button>
+      </td>
+     </tr>
+
+      <tr class="summary-row">
+        <td><strong>Total</strong></td>
+        <td><strong>{{ summary.total }}</strong></td>
+        <td></td>
+      </tr>
+      <tr class="summary-row">
+        <td><strong>Percentage</strong></td>
+        <td><strong>{{ summary.percentage | number:'1.2-2' }}%</strong></td>
+        <td></td>
+      </tr>
+    </table>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls">
+      <button (click)="prevPage()" [disabled]="page === 0">Previous</button>
+      <span>Page {{ page + 1 }} of {{ summary.totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="page >= summary.totalPages - 1">Next</button>
+    </div>
+    <div class="delete-section" *ngIf="summary">
+     <button class="delete-all-button" (click)="deleteAllMarks()">Delete Marks</button>
+    </div>
+
+  </div>
+<div *ngIf="showStudentSummary" class="form-group centered-summary">
+  <h3>All Students Summary</h3>
+  <table *ngIf="studentSummaryPage.length" class="centered-table">
+    <thead>
+      <tr>
+        <th>Student ID</th>
+        <th>Name</th>
+        <th>Total Marks</th>
+        <th>Percentage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of studentSummaryPage">
+        <td>{{ s.studentId }}</td>
+        <td>{{ s.name }}</td>
+        <td>{{ s.total }}</td>
+        <td>{{ s.percentage | number:'1.2-2' }}%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="pagination-controls">
+    <button (click)="prevSummaryPage()" [disabled]="summaryPage === 0">Previous</button>
+    <span>Page {{ summaryPage + 1 }} of {{ summaryTotalPages }}</span>
+    <button (click)="nextSummaryPage()" [disabled]="summaryPage + 1 >= summaryTotalPages">Next</button>
+  </div>
+</div>
+
+
+  <!-- Message Box -->
+  <div *ngIf="message" class="message-box success">{{ message }}</div>
+</div>

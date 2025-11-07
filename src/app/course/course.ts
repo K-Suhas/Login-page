@@ -1,4 +1,3 @@
-// src/app/Component/CourseComponent.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -42,23 +41,23 @@ export class CourseComponent {
         this.totalPages = data.totalPages;
         this.setMessage(`${data.totalElements} course(s) found.`);
       },
-      error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+      error: err => {
+        const msg = err.error?.message || err.message || 'Failed to load courses';
+        console.error('Error:', msg);
+        this.setMessage(msg);
       }
     });
   }
-   canEditStudents(): boolean {
-  const role = this.auth.getRole();
-  return role !== null && ['ADMIN', 'TEACHER'].includes(role);
-}
 
+  canEditStudents(): boolean {
+    const role = this.auth.getRole();
+    return role !== null && ['ADMIN', 'TEACHER'].includes(role);
+  }
 
-canManageCourses(): boolean {
-  const role = this.auth.getRole();
-  return role === 'ADMIN';
-}
-
+  canManageCourses(): boolean {
+    const role = this.auth.getRole();
+    return role === 'ADMIN';
+  }
 
   searchCourses() {
     this.courseService.searchCourses(this.searchQuery, this.currentPage, this.pageSize).subscribe({
@@ -67,17 +66,12 @@ canManageCourses(): boolean {
         this.totalPages = data.totalPages;
         this.setMessage(`${data.totalElements} course(s) matched.`);
       },
-      error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+      error: err => {
+        const msg = err.error?.message || err.message || 'Failed to search courses';
+        console.error('Error:', msg);
+        this.setMessage(msg);
       }
     });
-  }
-    prepareUpdate(course: CourseDTO): void {
-    this.updateId = String(course.id);
-    this.updateForm = { name: course.name };
-    this.showUpdateForm = true;
-    this.setMessage('');
   }
 
   getCourseById() {
@@ -92,9 +86,10 @@ canManageCourses(): boolean {
         this.totalPages = 1;
         this.setMessage('Course found.');
       },
-      error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+      error: err => {
+        const msg = err.error?.message || err.message || 'Course not found';
+        console.error('Error:', msg);
+        this.setMessage(msg);
       }
     });
   }
@@ -110,9 +105,10 @@ canManageCourses(): boolean {
         this.setMessage(msg);
         this.getAllCourses();
       },
-      error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+      error: err => {
+        const msg = err.error?.message || err.message || 'Failed to delete course';
+        console.error('Error:', msg);
+        this.setMessage(msg);
       }
     });
   }
@@ -128,9 +124,10 @@ canManageCourses(): boolean {
         this.setMessage(msg);
         this.getAllCourses();
       },
-      error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+      error: err => {
+        const msg = err.error?.message || err.message || 'Failed to delete course';
+        console.error('Error:', msg);
+        this.setMessage(msg);
       }
     });
   }
@@ -148,6 +145,13 @@ canManageCourses(): boolean {
     this.setMessage('');
   }
 
+  prepareUpdate(course: CourseDTO): void {
+    this.updateId = String(course.id);
+    this.updateForm = { name: course.name };
+    this.showUpdateForm = true;
+    this.setMessage('');
+  }
+
   submitAdd() {
     if (!this.addForm.name.trim()) {
       this.setMessage('Course name is required.');
@@ -160,9 +164,10 @@ canManageCourses(): boolean {
         this.toggleAddForm();
         this.getAllCourses();
       },
-      error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+      error: err => {
+        const msg = err.error?.message || err.message || 'Failed to add course';
+        console.error('Error:', msg);
+        this.setMessage(msg);
       }
     });
   }
@@ -179,9 +184,10 @@ canManageCourses(): boolean {
         this.toggleUpdateForm();
         this.getAllCourses();
       },
-      error: (err) => {
-        console.error('Error:', err.message);
-        this.setMessage(err.message);
+      error: err => {
+        const msg = err.error?.message || err.message || 'Failed to update course';
+        console.error('Error:', msg);
+        this.setMessage(msg);
       }
     });
   }
@@ -200,13 +206,12 @@ canManageCourses(): boolean {
     }
   }
 
- private setMessage(msg: string): void {
-  this.message = msg;
-  if (msg && !msg.toLowerCase().includes('error')) {
-    setTimeout(() => {
-      this.message = '';
-    }, 3000);
+  private setMessage(msg: string): void {
+    this.message = msg;
+    if (msg && !msg.toLowerCase().includes('error')) {
+      setTimeout(() => {
+        this.message = '';
+      }, 3000);
+    }
   }
-}
-
 }
