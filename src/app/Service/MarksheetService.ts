@@ -72,6 +72,10 @@ deleteAllMarks(studentId: number, semester: number): Observable<string> {
 getPaginatedStudentSummary(page: number, size: number): Observable<Page<StudentMarksSummaryDTO>> {
   return this.http.get<Page<StudentMarksSummaryDTO>>(`${this.baseUrl}/summary?page=${page}&size=${size}`);
 }
+getPercentageDistribution(): Observable<{ [key: string]: number }> {
+  return this.http.get<{ [key: string]: number }>(`${this.baseUrl}/distribution`);
+}
+
 
 
 

@@ -4,12 +4,15 @@ import { App } from './app';
 import { HomeComponent } from './home/home';
 import { CourseComponent } from './course/course';
 import { MarksheetComponent } from './marksheet/marksheet';
+import { PercentageGraphComponent } from './percentage-graph/percentage-graph';
 export const routes: Routes = [
  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: App },
   { path: 'home', component: HomeComponent },
   { path: 'students', component: StudentComponent },
   { path: 'course', component: CourseComponent },
-  { path: 'marksheet', component: MarksheetComponent }
+  { path: 'marksheet', component: MarksheetComponent },
+  {path: 'percentage-graph', component: PercentageGraphComponent}
+
   
 ];

@@ -25,6 +25,11 @@
   <div class="summary-toggle">
   <button  class="primary-button" (click)="toggleStudentSummary()">Students Result</button>
   </div>
+  <div *ngIf="canEditMarks()">
+  <button class="primary-button" [routerLink]="['/percentage-graph']">View Percentage Graph</button>
+</div>
+  
+
 
   <!-- Search Section -->
   <div class="search-section">
@@ -35,7 +40,11 @@
     <input [(ngModel)]="searchSemester" type="number" />
     <button (click)="searchMarksheet()">Search</button>
   </div>
-  
+ 
+
+
+
+
 
 
   <!-- Summary Table -->

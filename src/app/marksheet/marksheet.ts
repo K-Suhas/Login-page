@@ -32,6 +32,8 @@ export class MarksheetComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('User role:', this.auth.getRole());
+  console.log('Can edit marks:', this.canEditMarks());
     this.marksForm = this.fb.group({
       studentId: [null, Validators.required],
       semester: [1, Validators.required],
@@ -174,6 +176,7 @@ prevSummaryPage(): void {
     const role = this.auth.getRole();
     return role === 'ADMIN' || role === 'TEACHER';
   }
+  
 
   private setMessage(msg: string): void {
     this.message = msg;
@@ -181,5 +184,7 @@ prevSummaryPage(): void {
       setTimeout(() => this.message = '', 3000);
     }
   }
+ 
+
   
 }

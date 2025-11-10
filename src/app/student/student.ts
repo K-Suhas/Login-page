@@ -41,28 +41,6 @@ export class StudentComponent implements OnInit {
     private courseService: CourseService,
     private auth: AuthService
   ) {}
-  private setMessage(msg: string): void {
-  this.message = msg;
-  if (msg && !msg.toLowerCase().includes('error') && msg !== 'No students found.') {
-    setTimeout(() => {
-      this.message = '';
-    }, 3000);
-  }
-}
-
-previousPage(): void {
-  if (this.currentPage > 0) {
-    this.currentPage--;
-    this.getAllStudents();
-  }
-}
-
-nextPage(): void {
-  if (this.currentPage + 1 < this.totalPages) {
-    this.currentPage++;
-    this.getAllStudents();
-  }
-}
 
   ngOnInit(): void {
     this.courseService.getAllCourses(0, 100).subscribe({
@@ -75,6 +53,8 @@ nextPage(): void {
         this.setMessage(msg);
       }
     });
+
+    this.getAllStudents();
   }
 
   getAllStudents(): void {
@@ -93,6 +73,20 @@ nextPage(): void {
         this.showTable = false;
       }
     });
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.getAllStudents();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage + 1 < this.totalPages) {
+      this.currentPage++;
+      this.getAllStudents();
+    }
   }
 
   canEditStudents(): boolean {
@@ -161,6 +155,8 @@ nextPage(): void {
       return;
     }
 
+    if (!confirm(`Are you sure you want to delete student ID ${id}?`)) return;
+
     this.studentService.deleteStudent(id).subscribe({
       next: () => {
         this.setMessage('Student deleted successfully');
@@ -180,6 +176,8 @@ nextPage(): void {
       return;
     }
 
+    if (!confirm(`Are you sure you want to delete student ID ${id}?`)) return;
+
     this.studentService.deleteStudent(id).subscribe({
       next: () => {
         this.setMessage('Student deleted successfully');
@@ -195,7 +193,10 @@ nextPage(): void {
 
   handleFileUpload(event: any): void {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file || !file.name.endsWith('.csv')) {
+      this.setMessage('Please upload a valid CSV file');
+      return;
+    }
 
     Papa.parse(file, {
       header: true,
@@ -239,6 +240,11 @@ nextPage(): void {
   }
 
   prepareUpdate(student: StudentDTO): void {
+    if (!student.id) {
+      console.warn('Student ID missing in prepareUpdate');
+      return;
+    }
+
     this.updateId = String(student.id);
     this.updateForm = {
       name: student.name,
@@ -273,9 +279,15 @@ nextPage(): void {
     });
   }
 
-  submitUpdate(): void {
+    submitUpdate(): void {
     const id = Number(this.updateId);
-    if (!id || !this.updateForm.name?.trim() || !this.updateForm.dob || !this.updateForm.dept?.trim() || !this.selectedUpdateCourse?.trim()) {
+    if (
+      !id ||
+      !this.updateForm.name?.trim() ||
+      !this.updateForm.dob ||
+      !this.updateForm.dept?.trim() ||
+      !this.selectedUpdateCourse?.trim()
+    ) {
       this.setMessage('All fields are required for update');
       return;
     }
@@ -296,45 +308,54 @@ nextPage(): void {
     });
   }
 
- submitBulkStudents(): void {
-  if (!this.studentsToUpload.length) {
-    this.setMessage('No students to upload');
-    return;
-  }
-
-  const validStudents = this.studentsToUpload.filter(s =>
-    s.name && s.dob && s.dept && Array.isArray(s.courseNames) && s.courseNames.length
-  );
-
-  if (!validStudents.length) {
-    this.setMessage('All rows are missing required fields');
-    return;
-  }
-
-  this.studentService.uploadBulkStudents(validStudents).subscribe({
-    next: (res) => {
-      const msg = res?.message || res?.text || 'Students uploaded successfully';
-      this.setMessage(msg);
-      this.getAllStudents();
-    },
-    error: (err) => {
-      console.error('Bulk upload error:', err);
-
-      // Defensive fallback if success lands in error block
-      if (err?.error?.text === 'Students uploaded successfully') {
-        this.setMessage('Students uploaded successfully');
-        this.getAllStudents();
-        return;
-      }
-
-      // Handle structured error list
-      if (Array.isArray(err.error)) {
-        this.setMessage('Errors:\n' + err.error.join('\n'));
-      } else {
-        const msg = err.error?.message || err.message || 'Upload failed';
-        this.setMessage(msg);
-      }
+  submitBulkStudents(): void {
+    if (!this.studentsToUpload.length) {
+      this.setMessage('No students to upload');
+      return;
     }
-  });
-}
+
+    const validStudents = this.studentsToUpload.filter(s =>
+      s.name && s.dob && s.dept && Array.isArray(s.courseNames) && s.courseNames.length
+    );
+
+    if (!validStudents.length) {
+      this.setMessage('All rows are missing required fields');
+      return;
+    }
+
+    this.studentService.uploadBulkStudents(validStudents).subscribe({
+      next: (res) => {
+        const msg = res?.message || res?.text || 'Students uploaded successfully';
+        this.setMessage(msg);
+        this.getAllStudents();
+      },
+      error: (err) => {
+        console.error('Bulk upload error:', err);
+
+        // Defensive fallback if success lands in error block
+        if (err?.error?.text === 'Students uploaded successfully') {
+          this.setMessage('Students uploaded successfully');
+          this.getAllStudents();
+          return;
+        }
+
+        // Handle structured error list
+        if (Array.isArray(err.error)) {
+          this.setMessage('Errors:\n' + err.error.join('\n'));
+        } else {
+          const msg = err.error?.message || err.message || 'Upload failed';
+          this.setMessage(msg);
+        }
+      }
+    });
+  }
+
+  private setMessage(msg: string): void {
+    this.message = msg;
+    if (msg && !msg.toLowerCase().includes('error') && msg !== 'No students found.') {
+      setTimeout(() => {
+        this.message = '';
+      }, 3000);
+    }
+  }
 }
