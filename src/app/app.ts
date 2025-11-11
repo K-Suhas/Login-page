@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './Service/AuthService'; // adjust path if needed
+import { PercentageGraphComponent } from './percentage-graph/percentage-graph';
 
 declare global {
   interface Window {
@@ -15,10 +16,18 @@ declare global {
 @Component({
   selector: 'app-root',
   standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule// ✅ Required for <router-outlet>
+  
+  ],
   templateUrl: './app.html',
-  styleUrls: ['./app.css'],
-  imports: [CommonModule, FormsModule, RouterModule]
+  styleUrls: ['./app.css']
 })
+
+
+
 export class App implements OnInit, AfterViewInit {
   message = '';
   showLogin = true;
@@ -60,6 +69,7 @@ export class App implements OnInit, AfterViewInit {
       setTimeout(() => this.renderGoogleButton(), 0);
     }
   }
+  
 
   renderGoogleButton() {
     const container = document.getElementById('google-signin-button');

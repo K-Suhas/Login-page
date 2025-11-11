@@ -12,7 +12,11 @@ export const routes: Routes = [
   { path: 'students', component: StudentComponent },
   { path: 'course', component: CourseComponent },
   { path: 'marksheet', component: MarksheetComponent },
-  {path: 'percentage-graph', component: PercentageGraphComponent}
+   {
+    path: 'percentage-graph',
+    loadComponent: () =>
+      import('./percentage-graph/percentage-graph').then(m => m.PercentageGraphComponent)
+  }
 
   
 ];

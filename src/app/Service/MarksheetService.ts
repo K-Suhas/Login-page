@@ -22,21 +22,31 @@ export interface MarksResponseDTO {
   totalPages: number;
   totalElements: number;
 }
+
 export interface StudentMarksSummaryDTO {
   studentId: number;
   name: string;
   total: number;
   percentage: number;
 }
+
 export interface Page<T> {
   content: T[];
   totalPages: number;
   totalElements: number;
   size: number;
-  number: number; // current page index
+  number: number;
 }
 
+export interface StudentInfo {
+  id: number;
+  name: string;
+}
 
+export interface PercentageGroup {
+  count: number;
+  students: StudentInfo[];
+}
 
 @Injectable({
   providedIn: 'root'
@@ -55,28 +65,26 @@ export class MarksheetService {
       `${this.baseUrl}/marksheet/${studentId}?semester=${semester}&page=${page}&size=${size}`
     );
   }
+
   updateMarks(studentId: number, semester: number, subjectName: string, newMarks: number): Observable<string> {
-  return this.http.put(`${this.baseUrl}/update`, null, {
-    params: { studentId, semester, subjectName, newMarks },
-    responseType: 'text'
-  });
-}
+    return this.http.put(`${this.baseUrl}/update`, null, {
+      params: { studentId, semester, subjectName, newMarks },
+      responseType: 'text'
+    });
+  }
 
+  deleteAllMarks(studentId: number, semester: number): Observable<string> {
+    return this.http.delete(`${this.baseUrl}/deleteAll`, {
+      params: { studentId, semester },
+      responseType: 'text'
+    });
+  }
 
-deleteAllMarks(studentId: number, semester: number): Observable<string> {
-  return this.http.delete(`${this.baseUrl}/deleteAll`, {
-    params: { studentId, semester },
-    responseType: 'text'
-  });
-}
-getPaginatedStudentSummary(page: number, size: number): Observable<Page<StudentMarksSummaryDTO>> {
-  return this.http.get<Page<StudentMarksSummaryDTO>>(`${this.baseUrl}/summary?page=${page}&size=${size}`);
-}
-getPercentageDistribution(): Observable<{ [key: string]: number }> {
-  return this.http.get<{ [key: string]: number }>(`${this.baseUrl}/distribution`);
-}
+  getPaginatedStudentSummary(page: number, size: number): Observable<Page<StudentMarksSummaryDTO>> {
+    return this.http.get<Page<StudentMarksSummaryDTO>>(`${this.baseUrl}/summary?page=${page}&size=${size}`);
+  }
 
-
-
-
+  getPercentageDistribution(): Observable<{ [range: string]: PercentageGroup }> {
+    return this.http.get<{ [range: string]: PercentageGroup }>(`${this.baseUrl}/distribution`);
+  }
 }

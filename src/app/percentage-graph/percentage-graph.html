@@ -1,7 +1,21 @@
 <div class="graph-container">
+ <div class="graph-container">
   <canvas baseChart
     [data]="chartData"
     [options]="chartOptions"
-    [type]="chartType">
+    [type]="chartType"
+    (chartClick)="handleChartClick($event.event, $any($event.active))"
+    width="800"
+    height="400">
   </canvas>
+</div>
+
+</div>
+<div *ngIf="selectedStudents.length" class="student-toggle-box">
+  <h3>Students in selected range:</h3>
+  <ul>
+    <li *ngFor="let s of selectedStudents">
+      <strong>{{ s.id }}</strong> - {{ s.name }}
+    </li>
+  </ul>
 </div>

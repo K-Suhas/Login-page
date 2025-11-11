@@ -1,4 +1,28 @@
 .graph-container {
-  max-width: 700px;
-  margin: 30px auto;
+  max-width: 800px;
+  margin: auto;
+  height: 400px;
+}
+
+.student-toggle-box {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #eef2ff;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.student-toggle-box h3 {
+  margin-bottom: 10px;
+  color: #1e3a8a;
+}
+
+.student-toggle-box ul {
+  padding-left: 20px;
+}
+
+.student-toggle-box li {
+  margin-bottom: 6px;
+  font-size: 15px;
 }

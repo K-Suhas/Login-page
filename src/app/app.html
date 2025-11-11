@@ -10,12 +10,8 @@
 
   <p class="message error" *ngIf="message">{{ message }}</p>
 </div>
-
-
 <div *ngIf="!showLogin">
   <router-outlet></router-outlet>
-
-
   <div style="text-align: center; margin-top: 20px;" *ngIf="isLoggedIn()">
     <button class="logout-button" (click)="logout()">Logout</button>
   </div>
