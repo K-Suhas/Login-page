@@ -5,6 +5,7 @@ import { HomeComponent } from './home/home';
 import { CourseComponent } from './course/course';
 import { MarksheetComponent } from './marksheet/marksheet';
 import { PercentageGraphComponent } from './percentage-graph/percentage-graph';
+import { adminGuard } from './guards/admin-guard';
 export const routes: Routes = [
  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: App },
@@ -16,7 +17,13 @@ export const routes: Routes = [
     path: 'percentage-graph',
     loadComponent: () =>
       import('./percentage-graph/percentage-graph').then(m => m.PercentageGraphComponent)
-  }
+  },
+ {
+  path: 'admin-dashboard',
+  loadComponent: () =>
+    import('./admin-dashboard/admin-dashboard').then(m => m.AdminDashboardComponent),
+  canActivate: [adminGuard]
+}
 
   
 ];

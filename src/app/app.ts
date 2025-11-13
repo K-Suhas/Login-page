@@ -49,10 +49,17 @@ export class App implements OnInit, AfterViewInit {
       const isLoggedIn = this.auth.isLoggedIn();
       this.showLogin = isLoginRoute && !isLoggedIn;
 
-      // Optional: redirect logged-in users away from login
-      if (isLoginRoute && isLoggedIn) {
-        this.router.navigate(['/home']);
-      }
+    if (isLoginRoute && isLoggedIn) {
+  const role = this.auth.getRole();
+  if (role === 'ADMIN') {
+    this.router.navigate(['/admin-dashboard']);
+  } else if (role === 'TEACHER') {
+    this.router.navigate(['/teacher-dashboard']);
+  } else {
+    this.router.navigate(['/student-dashboard']);
+  }
+}
+
 
       // Re-render button if needed
       if (this.showLogin) {
@@ -90,25 +97,39 @@ export class App implements OnInit, AfterViewInit {
   }
 
   verifyTokenWithBackend(token: string) {
-    fetch('http://localhost:8080/auth/google', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken: token }) // ✅ match backend key
-    })
+  fetch('http://localhost:8080/auth/google', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idToken: token }) // ✅ match backend key
+  })
     .then(res => {
       if (!res.ok) throw new Error('Backend rejected token');
       return res.json();
     })
     .then(user => {
+      console.log('Verified user:', user);
       this.auth.setUser(user); // ✅ store user and role
-      this.router.navigate(['/home']);
       this.showLogin = false;
+
+      const role = user.role;
+      if (role === 'ADMIN') {
+        this.router.navigate(['/admin-dashboard']).then(() => {
+          // Lock dashboard in history
+          window.history.pushState(null, '', '/admin-dashboard');
+        });
+      } else if (role === 'TEACHER') {
+        this.router.navigate(['/teacher-dashboard']);
+      } else {
+        this.router.navigate(['/student-dashboard']);
+      }
     })
     .catch(err => {
       this.message = 'Google login failed. Please try again.';
       console.error('Login error:', err);
     });
-  }
+}
+
+
 
   isLoggedIn(): boolean {
     return this.auth.isLoggedIn();

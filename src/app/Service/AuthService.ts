@@ -22,6 +22,10 @@ export class AuthService {
     return this.user?.role || null;
   }
 
+  getIdToken(): string | null {
+    return this.user?.token || null;
+  }
+
   isLoggedIn(): boolean {
     return !!this.user;
   }

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './AuthService';
 
 export interface MarksDTO {
   subjectName: string;
@@ -54,20 +55,31 @@ export interface PercentageGroup {
 export class MarksheetService {
   private baseUrl = 'http://localhost:8080/marks';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private auth: AuthService) {}
+
+  private getAuthHeaders(): HttpHeaders {
+    return new HttpHeaders({
+      Authorization: `Bearer ${this.auth.getIdToken()}`
+    });
+  }
 
   submitMarks(payload: MarksEntryRequest): Observable<string> {
-    return this.http.post(`${this.baseUrl}/bulk`, payload, { responseType: 'text' });
+    return this.http.post(`${this.baseUrl}/bulk`, payload, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text'
+    });
   }
 
   getMarksheetSummary(studentId: number, semester: number, page: number, size: number): Observable<MarksResponseDTO> {
     return this.http.get<MarksResponseDTO>(
-      `${this.baseUrl}/marksheet/${studentId}?semester=${semester}&page=${page}&size=${size}`
+      `${this.baseUrl}/marksheet/${studentId}?semester=${semester}&page=${page}&size=${size}`,
+      { headers: this.getAuthHeaders() }
     );
   }
 
   updateMarks(studentId: number, semester: number, subjectName: string, newMarks: number): Observable<string> {
     return this.http.put(`${this.baseUrl}/update`, null, {
+      headers: this.getAuthHeaders(),
       params: { studentId, semester, subjectName, newMarks },
       responseType: 'text'
     });
@@ -75,16 +87,23 @@ export class MarksheetService {
 
   deleteAllMarks(studentId: number, semester: number): Observable<string> {
     return this.http.delete(`${this.baseUrl}/deleteAll`, {
+      headers: this.getAuthHeaders(),
       params: { studentId, semester },
       responseType: 'text'
     });
   }
 
   getPaginatedStudentSummary(page: number, size: number): Observable<Page<StudentMarksSummaryDTO>> {
-    return this.http.get<Page<StudentMarksSummaryDTO>>(`${this.baseUrl}/summary?page=${page}&size=${size}`);
+    return this.http.get<Page<StudentMarksSummaryDTO>>(
+      `${this.baseUrl}/summary?page=${page}&size=${size}`,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   getPercentageDistribution(): Observable<{ [range: string]: PercentageGroup }> {
-    return this.http.get<{ [range: string]: PercentageGroup }>(`${this.baseUrl}/distribution`);
+    return this.http.get<{ [range: string]: PercentageGroup }>(
+      `${this.baseUrl}/distribution`,
+      { headers: this.getAuthHeaders() }
+    );
   }
 }

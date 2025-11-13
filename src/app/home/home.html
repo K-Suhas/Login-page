@@ -5,7 +5,14 @@
     <button class="primary-button" (click)="goToCourses()">Course</button>
     <button class="primary-button" routerLink="/marksheet">Marksheet</button>
 
-
   </div>
 </div>
-<p>home works!</p>
+<div class="container">
+  <!-- Only show for ADMIN -->
+  <button *ngIf="isAdmin" class="primary-button" (click)="goToAdminDashboard()">
+    Back to Admin Dashboard
+  </button>
+
+  <!-- Other home content -->
+</div>
+

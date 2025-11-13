@@ -16,9 +16,25 @@ export class HomeComponent {
   goToStudentInfo() {
     this.router.navigate(['/students']);
   }
+   get isAdmin(): boolean {
+    return this.auth.getRole() === 'ADMIN';
+  }
+
   goToCourses() {
   this.router.navigate(['/course']);
 }
+goToAdminDashboard(): void {
+  const role = this.auth.getRole();
+  if (role === 'ADMIN') {
+    this.router.navigate(['/admin-dashboard']).then(() => {
+      window.history.pushState(null, '', '/admin-dashboard');
+    });
+  } else {
+    this.router.navigate(['/admin-dashboard']);
+  }
+}
+
+
 canAccessCourses(): boolean {
   const role = this.auth.getRole();
   return role === 'ADMIN';
