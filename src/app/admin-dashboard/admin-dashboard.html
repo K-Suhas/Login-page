@@ -1,8 +1,11 @@
 <div class="container">
-  <h2>Admin Dashboard</h2>
+  <!-- Header with title and bell -->
+  <div class="header">
+    <h2>Admin Dashboard</h2>
+    <app-notification-bell></app-notification-bell>
+  </div>
 
   <div *ngIf="loading" class="loading">Loading dashboard...</div>
-   <app-notification-bell></app-notification-bell>
 
   <div *ngIf="!loading" class="side-by-side">
     <!-- Student Info -->
@@ -57,29 +60,28 @@
   </div>
 
   <!-- Mail Section -->
-<div class="mail-section">
-  <h3>📢 Send Announcement</h3>
-  <form (ngSubmit)="sendMail()">
-    <label>Recipient:</label>
-    <select [(ngModel)]="toEmail" name="toEmail">
-      <option value="ALL">All Students</option>
-      <option *ngFor="let student of students" [value]="student.email">
-        {{ student.name }} ({{ student.email }})
-      </option>
-    </select>
+  <div class="mail-section">
+    <h3>📢 Send Announcement</h3>
+    <form (ngSubmit)="sendMail()">
+      <label>Recipient:</label>
+      <select [(ngModel)]="toEmail" name="toEmail">
+        <option value="ALL">All Students</option>
+        <option *ngFor="let student of students" [value]="student.email">
+          {{ student.name }} ({{ student.email }})
+        </option>
+      </select>
 
-    <label>Subject:</label>
-    <input [(ngModel)]="subject" name="subject" placeholder="Enter subject..." required />
+      <label>Subject:</label>
+      <input [(ngModel)]="subject" name="subject" placeholder="Enter subject..." required />
 
-    <label>Body:</label>
-    <textarea [(ngModel)]="body" name="body" placeholder="Write your announcement..." required></textarea>
+      <label>Body:</label>
+      <textarea [(ngModel)]="body" name="body" placeholder="Write your announcement..." required></textarea>
 
-    <button type="submit">🚀 Send Mail</button>
-  </form>
+      <button type="submit">🚀 Send Mail</button>
+    </form>
 
-  <p *ngIf="mailMessage" class="mail-status">{{ mailMessage }}</p>
-</div>
-
+    <p *ngIf="mailMessage" class="mail-status">{{ mailMessage }}</p>
+  </div>
 
   <!-- Navigation -->
   <div class="unified-buttons">
