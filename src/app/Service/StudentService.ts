@@ -10,6 +10,7 @@ export interface StudentDTO {
   dob?: string;
   dept?: string;
   courseNames?: string[];
+  email?: string; 
 }
 
 @Injectable({ providedIn: 'root' })

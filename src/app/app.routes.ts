@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { StudentComponent } from './student/student'; // updated import
-import { App } from './app';
+import { AppComponent } from './app';
 import { HomeComponent } from './home/home';
 import { CourseComponent } from './course/course';
 import { MarksheetComponent } from './marksheet/marksheet';
@@ -8,7 +8,7 @@ import { PercentageGraphComponent } from './percentage-graph/percentage-graph';
 import { adminGuard } from './guards/admin-guard';
 export const routes: Routes = [
  { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'login', component: App },
+  { path: 'login', component: AppComponent },
   { path: 'home', component: HomeComponent },
   { path: 'students', component: StudentComponent },
   { path: 'course', component: CourseComponent },

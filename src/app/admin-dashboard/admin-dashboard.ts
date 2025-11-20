@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AdminService } from '../Service/AdminService';
+import { MailService } from '../Service/MailService';
 import { Router } from '@angular/router';
-import { PercentageGraphComponent } from '../percentage-graph/percentage-graph'; // ✅ Confirm this path is correct
+import { PercentageGraphComponent } from '../percentage-graph/percentage-graph';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,PercentageGraphComponent
-],
+  imports: [CommonModule, FormsModule, PercentageGraphComponent],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.css']
 })
@@ -18,11 +18,21 @@ export class AdminDashboardComponent implements OnInit {
   courses: any[] = [];
   loading = true;
 
+  // Mail form fields
+  toEmail: string = 'ALL';
+  subject: string = '';
+  body: string = '';
+  mailMessage: string = '';
+
   studentPage = 0;
   coursePage = 0;
-  pageSize = 5 ;
+  pageSize = 5;
 
-  constructor(private adminService: AdminService, private router: Router) {}
+  constructor(
+    private adminService: AdminService,
+    private mailService: MailService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.adminService.getDashboardData().subscribe({
@@ -36,12 +46,9 @@ export class AdminDashboardComponent implements OnInit {
         this.loading = false;
       }
     });
-
-    window.onpopstate = () => {
-      history.pushState(null, '', '/admin-dashboard');
-    };
   }
 
+  // Pagination helpers
   get paginatedStudents(): any[] {
     const start = this.studentPage * this.pageSize;
     return this.students.slice(start, start + this.pageSize);
@@ -55,32 +62,35 @@ export class AdminDashboardComponent implements OnInit {
   prevStudentPage() {
     if (this.studentPage > 0) this.studentPage--;
   }
-  get maxStudentPages(): number {
-  return Math.min(5, Math.ceil(this.students.length / this.pageSize));
-}
-
-get maxCoursePages(): number {
-  return Math.min(5, Math.ceil(this.courses.length / this.pageSize));
-}
-
-
-nextStudentPage() {
-  if (this.studentPage + 1 < this.maxStudentPages) {
-    this.studentPage++;
+  nextStudentPage() {
+    if ((this.studentPage + 1) * this.pageSize < this.students.length) {
+      this.studentPage++;
+    }
   }
-}
-
-nextCoursePage() {
-  if (this.coursePage + 1 < this.maxCoursePages) {
-    this.coursePage++;
-  }
-}
-
 
   prevCoursePage() {
     if (this.coursePage > 0) this.coursePage--;
   }
+  nextCoursePage() {
+    if ((this.coursePage + 1) * this.pageSize < this.courses.length) {
+      this.coursePage++;
+    }
+  }
 
+  // Mail sending
+  sendMail() {
+    if (this.toEmail === 'ALL') {
+      this.mailService.sendToAll(this.subject, this.body).subscribe({
+        next: () => this.mailMessage = '✅ Mail sent to all students!',
+        error: err => this.mailMessage = '❌ Error: ' + (err.error?.message || 'Failed to send')
+      });
+    } else {
+      this.mailService.sendToOne(this.toEmail, this.subject, this.body).subscribe({
+        next: () => this.mailMessage = `✅ Mail sent to ${this.toEmail}!`,
+        error: err => this.mailMessage = '❌ Error: ' + (err.error?.message || 'Failed to send')
+      });
+    }
+  }
 
   goToHome(): void {
     this.router.navigate(['/home']);

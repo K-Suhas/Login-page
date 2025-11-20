@@ -25,8 +25,8 @@ export class StudentComponent implements OnInit {
   showUpdateForm = false;
   showTable = false;
 
-  addForm: StudentDTO = { name: '', dob: '', dept: '', courseNames: [] };
-  updateForm: StudentDTO = { name: '', dob: '', dept: '', courseNames: [] };
+  addForm: StudentDTO = { name: '', dob: '', dept: '', courseNames: [],email: '' };
+  updateForm: StudentDTO = { name: '', dob: '', dept: '', courseNames: [],email: '' };
   filteredStudents: StudentDTO[] = [];
 
   currentPage = 0;
@@ -207,7 +207,9 @@ export class StudentComponent implements OnInit {
           const dob = this.convertToIso(row['DOB']);
           const dept = row['Department']?.trim();
           const courseNames = row['Course']?.split(',').map((c: string) => c.trim()).filter(Boolean);
-          return { name, dob, dept, courseNames };
+          const email = row['Email']?.trim();
+          return { name, dob, dept, courseNames, email };
+
         });
       },
       error: (err) => {
@@ -250,7 +252,8 @@ export class StudentComponent implements OnInit {
       name: student.name,
       dob: student.dob,
       dept: student.dept,
-      courseNames: student.courseNames ?? []
+      courseNames: student.courseNames ?? [],
+      email: student.email ?? ''
     };
     this.selectedUpdateCourse = student.courseNames?.[0] ?? '';
     this.showUpdateForm = true;
@@ -258,10 +261,11 @@ export class StudentComponent implements OnInit {
   }
 
   submitAdd(): void {
-    if (!this.addForm.name?.trim() || !this.selectedCourse?.trim()) {
-      this.setMessage('Name and course are required');
-      return;
-    }
+    if (!this.addForm.name?.trim() || !this.selectedCourse?.trim() || !this.addForm.email?.trim()) {
+      this.setMessage('Name, course, and email are required');
+       return;
+      }
+
 
     this.addForm.courseNames = [this.selectedCourse];
 
@@ -281,16 +285,11 @@ export class StudentComponent implements OnInit {
 
     submitUpdate(): void {
     const id = Number(this.updateId);
-    if (
-      !id ||
-      !this.updateForm.name?.trim() ||
-      !this.updateForm.dob ||
-      !this.updateForm.dept?.trim() ||
-      !this.selectedUpdateCourse?.trim()
-    ) {
-      this.setMessage('All fields are required for update');
-      return;
+    if (!id || !this.updateForm.name?.trim() || !this.updateForm.dob || !this.updateForm.dept?.trim() || !this.selectedUpdateCourse?.trim() || !this.updateForm.email?.trim()) {
+      this.setMessage('All fields including email are required for update');
+       return;
     }
+
 
     this.updateForm.courseNames = [this.selectedUpdateCourse];
 
@@ -315,8 +314,8 @@ export class StudentComponent implements OnInit {
     }
 
     const validStudents = this.studentsToUpload.filter(s =>
-      s.name && s.dob && s.dept && Array.isArray(s.courseNames) && s.courseNames.length
-    );
+    s.name && s.dob && s.dept && s.email && Array.isArray(s.courseNames) && s.courseNames.length);
+
 
     if (!validStudents.length) {
       this.setMessage('All rows are missing required fields');
@@ -332,14 +331,11 @@ export class StudentComponent implements OnInit {
       error: (err) => {
         console.error('Bulk upload error:', err);
 
-        // Defensive fallback if success lands in error block
         if (err?.error?.text === 'Students uploaded successfully') {
           this.setMessage('Students uploaded successfully');
           this.getAllStudents();
           return;
         }
-
-        // Handle structured error list
         if (Array.isArray(err.error)) {
           this.setMessage('Errors:\n' + err.error.join('\n'));
         } else {

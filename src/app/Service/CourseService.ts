@@ -23,7 +23,7 @@ export class CourseService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    let message = 'An unknown error occurred';
+    let message = 'An unknown error occurred';     
     if (error.error instanceof ErrorEvent) {
       message = `Client error: ${error.error.message}`;
     } else {

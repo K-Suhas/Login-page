@@ -1,15 +1,10 @@
 <div class="login-container" *ngIf="showLogin">
   <h1>SENSEI LOGIN</h1>
-
-  <p class="welcome-text">
-    Sign in with your Google account to continue.
-  </p>
-
- 
+  <p class="welcome-text">Sign in with your Google account to continue.</p>
   <div id="google-signin-button"></div>
-
   <p class="message error" *ngIf="message">{{ message }}</p>
 </div>
+
 <div *ngIf="!showLogin">
   <router-outlet></router-outlet>
   <div style="text-align: center; margin-top: 20px;" *ngIf="isLoggedIn()">

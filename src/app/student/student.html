@@ -3,7 +3,7 @@
 
   <!-- Search and Clear -->
   <div class="search-row">
-    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, ID or DOB (yyyy-MM-dd)" />
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, ID, DOB or Email" />
     <button class="secondary-button" (click)="searchStudents()">
       <i class="fas fa-search"></i> Search
     </button>
@@ -29,6 +29,7 @@
       <input type="text" [(ngModel)]="addForm.name" placeholder="Name" />
       <input type="date" [(ngModel)]="addForm.dob" />
       <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
+      <input type="email" [(ngModel)]="addForm.email" placeholder="Email" />
     </div>
     <div class="form-row">
       <label>Select Course:</label>
@@ -59,6 +60,7 @@
       <input type="text" [(ngModel)]="updateForm.name" placeholder="Name" />
       <input type="date" [(ngModel)]="updateForm.dob" />
       <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department" />
+      <input type="email" [(ngModel)]="updateForm.email" placeholder="Email" />
     </div>
     <div class="form-row">
       <label>Update Course:</label>
@@ -81,6 +83,7 @@
         <th>Name</th>
         <th>DOB</th>
         <th>Department</th>
+        <th>Email</th>
         <th>Courses</th>
         <th *ngIf="canEditStudents()">Actions</th>
       </tr>
@@ -91,19 +94,18 @@
         <td>{{ student.name }}</td>
         <td>{{ student.dob | date:'mediumDate' }}</td>
         <td>{{ student.dept }}</td>
+        <td>{{ student.email }}</td>
         <td>{{ student.courseNames?.join(', ') || 'None' }}</td>
         <td *ngIf="canEditStudents()">
           <div class="row-actions">
             <button class="danger-button" (click)="deleteStudent(student.id)">
               <i class="fas fa-trash"></i> Delete
             </button>
-
             <button class="primary-button" (click)="prepareUpdate(student)">
               <i class="fas fa-edit"></i> Update
             </button>
           </div>
         </td>
-
       </tr>
     </tbody>
   </table>
