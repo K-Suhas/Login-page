@@ -5,11 +5,12 @@ import { AdminService } from '../Service/AdminService';
 import { MailService } from '../Service/MailService';
 import { Router } from '@angular/router';
 import { PercentageGraphComponent } from '../percentage-graph/percentage-graph';
+import { NotificationBellComponent } from "../notification-bell/notification-bell";
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, PercentageGraphComponent],
+  imports: [CommonModule, FormsModule, PercentageGraphComponent, NotificationBellComponent],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.css']
 })

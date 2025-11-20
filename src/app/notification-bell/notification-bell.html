@@ -1,0 +1,29 @@
+<div class="bell-container">
+  <!-- Bell Icon -->
+  <span class="bell-icon" (click)="toggleDropdown()">🔔</span>
+
+  <!-- Badge showing unread count -->
+  <span class="badge" *ngIf="hasUnread()">
+    {{ unreadCount() }}
+  </span>
+
+  <!-- Dropdown with notifications -->
+  <div class="dropdown" *ngIf="showDropdown">
+    <h4 class="dropdown-title">Notifications</h4>
+
+    <!-- Loop through notifications -->
+    <div *ngFor="let n of notifications" class="notification-item" [class.unread]="!n.read">
+      <div class="notification-header">
+        <strong>{{ n.mtitle }}</strong>
+        <small class="time">{{ n.time | date:'short' }}</small>
+      </div>
+      <p class="message">{{ n.message }}</p>
+      <button class="mark-read-btn" (click)="markAsRead(n.id)">Mark as Read</button>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="notifications.length === 0" class="empty-state">
+      <p>No notifications available</p>
+    </div>
+  </div>
+</div>
