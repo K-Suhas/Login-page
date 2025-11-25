@@ -9,7 +9,7 @@ body, html {
 
 .container {
   width: 100%;
-  max-width: 900px;
+  max-width: full;
   margin: auto;
   padding: 30px;
   background: #ffffff;

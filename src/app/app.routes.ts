@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { StudentComponent } from './student/student'; // updated import
+import { StudentComponent } from './student/student'; 
 import { AppComponent } from './app';
 import { HomeComponent } from './home/home';
 import { CourseComponent } from './course/course';
@@ -23,7 +23,5 @@ export const routes: Routes = [
   loadComponent: () =>
     import('./admin-dashboard/admin-dashboard').then(m => m.AdminDashboardComponent),
   canActivate: [adminGuard]
-}
-
-  
+} 
 ];
