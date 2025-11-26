@@ -1,90 +1,99 @@
-<div class="container">
-  <!-- Header with title and bell -->
-  <div class="header">
-    <h2>Admin Dashboard</h2>
-    <app-notification-bell></app-notification-bell>
+<!-- src/app/admin-dashboard/admin-dashboard.html -->
+
+<div class="header">
+  <h2>Admin Dashboard</h2>
+  <app-notification-bell></app-notification-bell>
+</div>
+<div class="header-actions">
+    <button class="home-button" (click)="goToHome()">🏠 Home</button>
   </div>
 
-  <div *ngIf="loading" class="loading">Loading dashboard...</div>
+<div class="container">
+   <div class="unified-buttons">
+  <button class="report-button" (click)="generateReport()">
+    📊 Generate Student Report
+  </button>
+</div>
+<div *ngIf="reportJobId" class="report-status">
+  <p>{{ reportMessage }}</p>
+  <div class="progress-bar-container">
+    <div class="progress-bar" [style.width.%]="reportProgress"></div>
+  </div>
+  <p class="percent">{{ reportProgress }}%</p>
+</div>
 
-  <div *ngIf="!loading" class="side-by-side">
-    <!-- Student Info -->
+  <div class="side-by-side">
     <div class="panel">
-      <h3>Student Info</h3>
-      <table *ngIf="paginatedStudents.length > 0">
+      <h3>Students</h3>
+      <table>
         <thead>
-          <tr><th>ID</th><th>Name</th><th>Department</th></tr>
+          <tr><th>ID</th><th>Name</th><th>Department</th><th>Email</th></tr>
         </thead>
         <tbody>
-          <tr *ngFor="let student of paginatedStudents">
-            <td>{{ student.id }}</td>
-            <td>{{ student.name }}</td>
-            <td>{{ student.dept }}</td>
+          <tr *ngFor="let s of paginatedStudents">
+            <td>{{ s.id }}</td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.dept }}</td>
+            <td>{{ s.email }}</td>
           </tr>
         </tbody>
       </table>
       <div class="pagination-controls">
-        <button (click)="prevStudentPage()" [disabled]="studentPage === 0">Previous</button>
+        <button (click)="prevStudentPage()">Prev</button>
         <span>Page {{ studentPage + 1 }}</span>
-        <button (click)="nextStudentPage()" [disabled]="(studentPage + 1) * pageSize >= students.length">Next</button>
+        <button (click)="nextStudentPage()">Next</button>
       </div>
     </div>
 
-    <!-- Course Info -->
     <div class="panel">
       <h3>Courses</h3>
-      <table *ngIf="paginatedCourses.length > 0">
+      <table>
         <thead>
-          <tr><th>ID</th><th>Name</th><th>Enrolled Students</th></tr>
+          <tr><th>ID</th><th>Name</th><th>Students</th></tr>
         </thead>
         <tbody>
-          <tr *ngFor="let course of paginatedCourses">
-            <td>{{ course.id }}</td>
-            <td>{{ course.name }}</td>
-            <td>{{ course.studentNames?.join(', ') || 'None' }}</td>
+          <tr *ngFor="let c of paginatedCourses">
+            <td>{{ c.id }}</td>
+            <td>{{ c.name }}</td>
+            <td>{{ c.studentNames?.length || 0 }}</td>
           </tr>
         </tbody>
       </table>
       <div class="pagination-controls">
-        <button (click)="prevCoursePage()" [disabled]="coursePage === 0">Previous</button>
+        <button (click)="prevCoursePage()">Prev</button>
         <span>Page {{ coursePage + 1 }}</span>
-        <button (click)="nextCoursePage()" [disabled]="(coursePage + 1) * pageSize >= courses.length">Next</button>
+        <button (click)="nextCoursePage()">Next</button>
       </div>
     </div>
   </div>
 
-  <!-- Graph Section -->
+
+ 
+
   <div class="graph-section">
-    <h3>Percentage Distribution</h3>
     <app-percentage-graph></app-percentage-graph>
   </div>
 
-  <!-- Mail Section -->
-  <div class="mail-section">
-    <h3>📢 Send Announcement</h3>
+   <div class="mail-section">
+    <h3>Send Mail</h3>
     <form (ngSubmit)="sendMail()">
-      <label>Recipient:</label>
+      <label>To</label>
       <select [(ngModel)]="toEmail" name="toEmail">
-        <option value="ALL">All Students</option>
-        <option *ngFor="let student of students" [value]="student.email">
-          {{ student.name }} ({{ student.email }})
-        </option>
+        <option value="ALL">ALL</option>
+        <option *ngFor="let s of students" [value]="s.email">{{ s.name }} ({{ s.email }})</option>
       </select>
 
-      <label>Subject:</label>
-      <input [(ngModel)]="subject" name="subject" placeholder="Enter subject..." required />
+      <label>Subject</label>
+      <input [(ngModel)]="subject" name="subject" type="text" />
 
-      <label>Body:</label>
-      <textarea [(ngModel)]="body" name="body" placeholder="Write your announcement..." required></textarea>
+      <label>Body</label>
+      <textarea [(ngModel)]="body" name="body"></textarea>
 
-      <button type="submit">🚀 Send Mail</button>
+      <button type="submit">Send</button>
     </form>
-
-    <p *ngIf="mailMessage" class="mail-status">{{ mailMessage }}</p>
+    <div class="mail-status" [class.error]="mailMessage.startsWith('❌')">{{ mailMessage }}</div>
   </div>
+  
+ 
 
-  <!-- Navigation -->
-  <div class="unified-buttons">
-    <button class="primary-button large-button" (click)="goToHome()">Go to Home Page</button>
-  </div>
 </div>
