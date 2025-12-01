@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MarksheetService, MarksDTO, MarksEntryRequest, MarksResponseDTO, StudentMarksSummaryDTO } from '../Service/MarksheetService';
+import { MarksheetService, MarksEntryRequest, MarksResponseDTO, StudentMarksSummaryDTO } from '../Service/MarksheetService';
 import { AuthService } from '../Service/AuthService';
+import { StudentReportService, StudentMarksheetDTO } from '../Service/StudentReportService';
 
 @Component({
   selector: 'app-marksheet',
@@ -24,16 +25,20 @@ export class MarksheetComponent implements OnInit {
   size = 5;
   showStudentSummary = false;
 
+  studentSummaryPage: StudentMarksSummaryDTO[] = [];
+  summaryPage = 0;
+  summaryTotalPages = 0;
+
+  individualReport?: StudentMarksheetDTO;
 
   constructor(
     private fb: FormBuilder,
     private service: MarksheetService,
-    private auth: AuthService
+    public auth: AuthService,
+    private reportService: StudentReportService
   ) {}
 
   ngOnInit(): void {
-    console.log('User role:', this.auth.getRole());
-  console.log('Can edit marks:', this.canEditMarks());
     this.marksForm = this.fb.group({
       studentId: [null, Validators.required],
       semester: [1, Validators.required],
@@ -46,15 +51,14 @@ export class MarksheetComponent implements OnInit {
         )
       )
     });
-   
   }
-  toggleStudentSummary(): void {
-  this.showStudentSummary = !this.showStudentSummary;
-  if (this.showStudentSummary) {
-    this.loadStudentSummary();
-  }
-}
 
+  toggleStudentSummary(): void {
+    this.showStudentSummary = !this.showStudentSummary;
+    if (this.showStudentSummary) {
+      this.loadStudentSummary();
+    }
+  }
 
   get subjectsArray(): FormArray {
     return this.marksForm.get('subjects') as FormArray;
@@ -100,37 +104,33 @@ export class MarksheetComponent implements OnInit {
       this.searchMarksheet();
     }
   }
-  studentSummaryPage: StudentMarksSummaryDTO[] = [];
-summaryPage = 0;
-summaryTotalPages = 0;
 
-loadStudentSummary(): void {
-  this.service.getPaginatedStudentSummary(this.summaryPage, 5).subscribe({
-    next: res => {
-      this.studentSummaryPage = res.content;
-      this.summaryTotalPages = res.totalPages;
-    },
-    error: err => {
-      const msg = err.error?.message || err.error || 'Failed to load student summary';
-      this.setMessage(msg);
+  loadStudentSummary(): void {
+    this.service.getPaginatedStudentSummary(this.summaryPage, 5).subscribe({
+      next: res => {
+        this.studentSummaryPage = res.content;
+        this.summaryTotalPages = res.totalPages;
+      },
+      error: err => {
+        const msg = err.error?.message || err.error || 'Failed to load student summary';
+        this.setMessage(msg);
+      }
+    });
+  }
+
+  nextSummaryPage(): void {
+    if (this.summaryPage + 1 < this.summaryTotalPages) {
+      this.summaryPage++;
+      this.loadStudentSummary();
     }
-  });
-}
-
-nextSummaryPage(): void {
-  if (this.summaryPage + 1 < this.summaryTotalPages) {
-    this.summaryPage++;
-    this.loadStudentSummary();
   }
-}
 
-prevSummaryPage(): void {
-  if (this.summaryPage > 0) {
-    this.summaryPage--;
-    this.loadStudentSummary();
+  prevSummaryPage(): void {
+    if (this.summaryPage > 0) {
+      this.summaryPage--;
+      this.loadStudentSummary();
+    }
   }
-}
-
 
   updateSubjectMarks(subjectName: string): void {
     const newMarks = prompt(`Enter new marks for ${subjectName}:`);
@@ -172,11 +172,55 @@ prevSummaryPage(): void {
     });
   }
 
+  // === Individual student report (ADMIN only) ===
+  loadIndividualReport(): void {
+    if (this.auth.getRole() !== 'ADMIN') {
+      this.setMessage('Only ADMIN can view individual reports');
+      return;
+    }
+    if (!this.searchStudentId) {
+      this.setMessage('Please enter a valid Student ID');
+      return;
+    }
+    this.reportService.getIndividualReport(this.searchStudentId, this.searchSemester).subscribe({
+      next: data => this.individualReport = data,
+      error: err => {
+        const msg = err.error?.message || err.error || 'Failed to load individual report';
+        this.setMessage(msg);
+        this.individualReport = undefined;
+      }
+    });
+  }
+
+  downloadIndividualCsv(): void {
+    if (this.auth.getRole() !== 'ADMIN') {
+      this.setMessage('Only ADMIN can download individual reports');
+      return;
+    }
+    if (!this.searchStudentId) {
+      this.setMessage('Please enter a valid Student ID');
+      return;
+    }
+    this.reportService.downloadIndividualReport(this.searchStudentId, this.searchSemester).subscribe({
+      next: blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `student_${this.searchStudentId}_report.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: err => {
+        const msg = err.error?.message || err.error || 'Failed to download report';
+        this.setMessage(msg);
+      }
+    });
+  }
+
   canEditMarks(): boolean {
     const role = this.auth.getRole();
     return role === 'ADMIN' || role === 'TEACHER';
   }
-  
 
   private setMessage(msg: string): void {
     this.message = msg;
@@ -184,7 +228,4 @@ prevSummaryPage(): void {
       setTimeout(() => this.message = '', 3000);
     }
   }
- 
-
-  
 }

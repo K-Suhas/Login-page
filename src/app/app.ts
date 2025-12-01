@@ -95,10 +95,10 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.router.navigate(['/admin-dashboard']);
       break;
     case 'TEACHER':
-      this.router.navigate(['/teacher-dashboard']);
+      this.router.navigate(['/home']);
       break;
     case 'STUDENT':
-      this.router.navigate(['/student-dashboard']);
+      this.router.navigate(['/home']);
       break;
     default:
       // If role is null or unknown, go to login

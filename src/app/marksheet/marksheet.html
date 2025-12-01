@@ -22,14 +22,14 @@
       <button type="submit" class="primary-button">Submit Marks</button>
     </div>
   </form>
-  <div class="summary-toggle">
-  <button  class="primary-button" (click)="toggleStudentSummary()">Students Result</button>
-  </div>
-  <div *ngIf="canEditMarks()">
-  <button class="primary-button" [routerLink]="['/percentage-graph']">View Percentage Graph</button>
-</div>
-  
 
+  <div class="summary-toggle">
+    <button class="primary-button" (click)="toggleStudentSummary()">Students Result</button>
+  </div>
+
+  <div *ngIf="canEditMarks()">
+    <button class="primary-button" [routerLink]="['/percentage-graph']">View Percentage Graph</button>
+  </div>
 
   <!-- Search Section -->
   <div class="search-section">
@@ -39,27 +39,26 @@
     <label>Semester:</label>
     <input [(ngModel)]="searchSemester" type="number" />
     <button (click)="searchMarksheet()">Search</button>
+
+    <!-- Individual report controls (ADMIN only) -->
+    <div class="individual-controls" *ngIf="auth.getRole() === 'ADMIN'">
+      <button class="primary-button" (click)="loadIndividualReport()">View Individual Report</button>
+      <button class="primary-button" (click)="downloadIndividualCsv()">Download Individual Report</button>
+    </div>
   </div>
- 
 
-
-
-
-
-
-  <!-- Summary Table -->
+  <!-- Marksheet Summary (paginated subjects) -->
   <div *ngIf="summary" class="form-group">
     <h3>Marksheet Summary</h3>
     <table>
       <tr><th>Subject</th><th>Marks</th><th>Actions</th></tr>
       <tr *ngFor="let s of summary.subjects">
-       <td>{{ s.subjectName }}</td>
-       <td class="marks-cell">{{ s.marksObtained }}</td>
-
-       <td class="center-cell">
-      <button class="update-button" (click)="updateSubjectMarks(s.subjectName)">Update</button>
-      </td>
-     </tr>
+        <td>{{ s.subjectName }}</td>
+        <td class="marks-cell">{{ s.marksObtained }}</td>
+        <td class="center-cell">
+          <button class="update-button" (click)="updateSubjectMarks(s.subjectName)">Update</button>
+        </td>
+      </tr>
 
       <tr class="summary-row">
         <td><strong>Total</strong></td>
@@ -79,39 +78,55 @@
       <span>Page {{ page + 1 }} of {{ summary.totalPages }}</span>
       <button (click)="nextPage()" [disabled]="page >= summary.totalPages - 1">Next</button>
     </div>
+
     <div class="delete-section" *ngIf="summary">
-     <button class="delete-all-button" (click)="deleteAllMarks()">Delete Marks</button>
+      <button class="delete-all-button" (click)="deleteAllMarks()">Delete Marks</button>
     </div>
-
   </div>
-<div *ngIf="showStudentSummary" class="form-group centered-summary">
-  <h3>All Students Summary</h3>
-  <table *ngIf="studentSummaryPage.length" class="centered-table">
-    <thead>
-      <tr>
-        <th>Student ID</th>
-        <th>Name</th>
-        <th>Total Marks</th>
-        <th>Percentage</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let s of studentSummaryPage">
-        <td>{{ s.studentId }}</td>
-        <td>{{ s.name }}</td>
-        <td>{{ s.total }}</td>
-        <td>{{ s.percentage | number:'1.2-2' }}%</td>
-      </tr>
-    </tbody>
-  </table>
 
-  <div class="pagination-controls">
-    <button (click)="prevSummaryPage()" [disabled]="summaryPage === 0">Previous</button>
-    <span>Page {{ summaryPage + 1 }} of {{ summaryTotalPages }}</span>
-    <button (click)="nextSummaryPage()" [disabled]="summaryPage + 1 >= summaryTotalPages">Next</button>
+  <!-- All Students Summary -->
+  <div *ngIf="showStudentSummary" class="form-group centered-summary">
+    <h3>All Students Summary</h3>
+    <table *ngIf="studentSummaryPage.length" class="centered-table">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Name</th>
+          <th>Total Marks</th>
+          <th>Percentage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of studentSummaryPage">
+          <td>{{ s.studentId }}</td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.total }}</td>
+          <td>{{ s.percentage | number:'1.2-2' }}%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination-controls">
+      <button (click)="prevSummaryPage()" [disabled]="summaryPage === 0">Previous</button>
+      <span>Page {{ summaryPage + 1 }} of {{ summaryTotalPages }}</span>
+      <button (click)="nextSummaryPage()" [disabled]="summaryPage + 1 >= summaryTotalPages">Next</button>
+    </div>
   </div>
-</div>
 
+  <!-- Individual Student Report (JSON view) -->
+  <div *ngIf="individualReport" class="form-group">
+    <h3>{{ individualReport.name }}'s Report</h3>
+    <p><strong>Department:</strong> {{ individualReport.dept }}</p>
+
+    <h4>Subjects</h4>
+    <table class="subject-table">
+      <tr><th>Subject</th><th>Marks</th></tr>
+      <tr *ngFor="let s of individualReport.subjects">
+        <td class="left-cell">{{ s.subjectName }}</td>
+        <td class="left-cell">{{ s.marksObtained }}</td>
+      </tr>
+    </table>
+  </div>
 
   <!-- Message Box -->
   <div *ngIf="message" class="message-box success">{{ message }}</div>

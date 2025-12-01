@@ -52,6 +52,33 @@ td {
   padding: 10px;
   border-bottom: 1px solid #ddd;
 }
+/* src/app/marksheet/marksheet.css */
+
+/* Table styling for individual report */
+.subject-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.subject-table th,
+.subject-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left; /* ✅ ensures left alignment */
+}
+
+.left-cell {
+  text-align: left;
+}
+
+/* Optional: style buttons for individual report controls */
+.individual-controls {
+  margin-top: 10px;
+}
+
+.individual-controls .primary-button {
+  margin-right: 8px;
+}
 
 .unified-buttons {
   display: flex;

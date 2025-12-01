@@ -7,7 +7,7 @@ import { MailService } from '../Service/MailService';
 import { Router } from '@angular/router';
 import { PercentageGraphComponent } from '../percentage-graph/percentage-graph';
 import { NotificationBellComponent } from '../notification-bell/notification-bell';
-import { AdminReportService } from '../Service/AdminReportService';
+import { StudentReportService } from '../Service/StudentReportService';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -41,7 +41,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   constructor(
     private adminService: AdminService,
     private mailService: MailService,
-    private reportService: AdminReportService,
+    private reportService: StudentReportService,
     private router: Router
   ) {}
 
