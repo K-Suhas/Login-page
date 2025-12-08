@@ -1,7 +1,8 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../Service/AuthService';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -13,36 +14,15 @@ import { AuthService } from '../Service/AuthService';
 export class HomeComponent {
   constructor(private router: Router, private auth: AuthService) {}
 
-  goToStudentInfo() {
-    this.router.navigate(['/students']);
+  goToStudentInfo() { this.router.navigate(['/students']); }
+  goToCourses() { this.router.navigate(['/course']); }
+
+  get isAdmin(): boolean { return this.auth.getRole() === 'ADMIN'; }
+  get isTeacher(): boolean { return this.auth.getRole() === 'TEACHER'; }
+  get isStudent(): boolean { return this.auth.getRole() === 'STUDENT'; }
+
+  canManageTeachers(): boolean {
+    const role = this.auth.getRole();
+    return role === 'ADMIN' || role === 'TEACHER';
   }
-   get isAdmin(): boolean {
-    return this.auth.getRole() === 'ADMIN';
-  }
-
-  goToCourses() {
-  this.router.navigate(['/course']);
-}
-goToAdminDashboard(): void {
-  const role = this.auth.getRole();
-  if (role === 'ADMIN') {
-    this.router.navigate(['/admin-dashboard']).then(() => {
-      window.history.pushState(null, '', '/admin-dashboard');
-    });
-  } else {
-    this.router.navigate(['/admin-dashboard']);
-  }
-}
-
-
-canAccessCourses(): boolean {
-  const role = this.auth.getRole();
-  return role === 'ADMIN';
-}
-
-canManageStudents(): boolean {
-  const role = this.auth.getRole();
-  return role !== null && ['ADMIN', 'TEACHER'].includes(role);
-}
-
 }

@@ -1,17 +1,18 @@
 <div class="home-container">
-  <h2>Welcome to SENSEI Home</h2>
+  <!-- Header row: Admin Dashboard button left, heading center -->
+  <div class="home-header">
+    <button *ngIf="isAdmin" class="dashboard-button" routerLink="/admin-dashboard">
+      🔙 Admin Dashboard
+    </button>
+    
+  </div>
+<h2>Welcome to SENSEI Home</h2>
+  <!-- Navigation buttons -->
   <div class="button-group">
+    
     <button class="primary-button" (click)="goToStudentInfo()">Student Info</button>
     <button class="primary-button" (click)="goToCourses()">Course</button>
     <button class="primary-button" routerLink="/marksheet">Marksheet</button>
-
+    <button *ngIf="canManageTeachers()" class="primary-button" routerLink="/teachers">Teachers</button>
   </div>
 </div>
-<div class="container">
-  <!-- Only show for ADMIN -->
-  <button *ngIf="isAdmin" class="dashboard-button" (click)="goToAdminDashboard()">
-    🔙 
-  </button>
-</div>
-
-

@@ -26,6 +26,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   subject: string = '';
   body: string = '';
   mailMessage: string = '';
+  newAdmin = { name: '', email: '' };
+  adminMessage = '';
+  showAddAdminForm = false;
 
   studentPage = 0;
   coursePage = 0;
@@ -37,6 +40,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   reportState = '';
   reportMessage = '';
   pollingInterval: any;
+  showSidebar = false;
+
+toggleSidebar() {
+  this.showSidebar = !this.showSidebar;
+}
+
+
 
   constructor(
     private adminService: AdminService,
@@ -63,6 +73,34 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
     }
+  }
+  toggleAddAdminForm() {
+    this.showAddAdminForm = !this.showAddAdminForm;
+    this.adminMessage = '';
+    if (!this.showAddAdminForm) {
+      this.newAdmin = { name: '', email: ''};
+    }
+  }
+  
+  goToStudentInfo() { this.router.navigate(['/students']); }
+  goToCourses() { this.router.navigate(['/course']); }
+  goToMarksheet() { this.router.navigate(['/marksheet']); }
+  goToTeacherManagement() { this.router.navigate(['/teacher']); }
+  addAdmin() {
+    if (!this.newAdmin.name.trim() || !this.newAdmin.email.trim()) {
+      this.adminMessage = '❌ Name and email are required';
+      return;
+    }
+
+    this.adminService.addAdmin(this.newAdmin).subscribe({
+      next: () => {
+        this.adminMessage = '✅ Admin added successfully';
+        this.newAdmin = { name: '', email: '' };
+      },
+      error: err => {
+        this.adminMessage = '❌ Error: ' + (err.error?.message || 'Failed to add admin');
+      }
+    });
   }
 
   // Pagination helpers

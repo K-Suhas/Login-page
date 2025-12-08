@@ -2,22 +2,52 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 40px;
   min-height: 80vh;
   background: linear-gradient(135deg, #f0f4ff, #dbeafe);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  text-align: center;
   border-radius: 12px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 20px rgba(0,0,0,0.08);
 }
 
-.home-container h2 {
-  font-size: 2rem;
-  color: #1e3a8a;
+/* Header row: button left, heading center */
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
   margin-bottom: 30px;
 }
 
+.home-header h2 {
+  flex: 1;
+  text-align: center;
+  font-size: 2rem;
+  color: #1e3a8a;
+  margin: 0;
+}
+
+/* Dashboard button (top-left) */
+.dashboard-button {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+}
+
+/* Navigation buttons */
 .button-group {
   display: flex;
   gap: 20px;
@@ -43,26 +73,4 @@
 
 .primary-button:active {
   transform: scale(0.98);
-}
-.dashboard-button {
-  background: linear-gradient(135deg, #6a11cb, #2575fc); /* attractive gradient */
-  color: #fff;
-  padding: 14px 28px;
-  font-size: 16px;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.dashboard-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-  background: linear-gradient(135deg, #2575fc, #6a11cb); /* reverse gradient on hover */
 }

@@ -1,28 +1,65 @@
-<!-- src/app/admin-dashboard/admin-dashboard.html -->
-
-<div class="header">
-  <h2>Admin Dashboard</h2>
-  <app-notification-bell></app-notification-bell>
-</div>
-<div class="header-actions">
-    <button class="home-button" (click)="goToHome()">🏠 Home</button>
-  </div>
-
 <div class="container">
-   <div class="unified-buttons">
-  <button class="report-button" (click)="generateReport()">
-    📊 Generate Student Report
-  </button>
-</div>
-<div *ngIf="reportJobId" class="report-status">
-  <p>{{ reportMessage }}</p>
-  <div class="progress-bar-container">
-    <div class="progress-bar" [style.width.%]="reportProgress"></div>
+  <!-- Header row -->
+  <div class="header">
+    <button class="home-button" (click)="toggleSidebar()">🏠 Home</button>
+    <h2>Admin Dashboard</h2>
+    <app-notification-bell></app-notification-bell>
   </div>
-  <p class="percent">{{ reportProgress }}%</p>
-</div>
 
+  <!-- Sidebar -->
+  <div class="sidebar" *ngIf="showSidebar">
+    <div class="sidebar-header">
+      <h3>Navigation</h3>
+      <!-- Home button inside sidebar acts as close -->
+      <button class="home-button" (click)="toggleSidebar()">🏠 Home</button>
+    </div>
+    <button class="sidebar-button" (click)="goToStudentInfo()">Student Info</button>
+    <button class="sidebar-button" (click)="goToCourses()">Courses</button>
+    <button class="sidebar-button" routerLink="/marksheet">Marksheet</button>
+    <button class="sidebar-button" routerLink="/teachers">Teachers</button>
+  </div>
+
+  <!-- Add Admin button -->
+  <div class="admin-actions">
+    <button class="primary-button" (click)="toggleAddAdminForm()">
+      ➕ Add New Admin
+    </button>
+  </div>
+
+  <!-- Add Admin form -->
+  <div *ngIf="showAddAdminForm" class="admin-form">
+    <h3>New Admin Details</h3>
+    <form (ngSubmit)="addAdmin()">
+      <label>Name</label>
+      <input [(ngModel)]="newAdmin.name" name="adminName" type="text" />
+
+      <label>Email</label>
+      <input [(ngModel)]="newAdmin.email" name="adminEmail" type="email" />
+
+      <div class="form-row">
+        <button type="submit" class="primary-button">Submit</button>
+        <button type="button" class="secondary-button" (click)="toggleAddAdminForm()">Cancel</button>
+      </div>
+    </form>
+    <div class="admin-status" [class.error]="adminMessage.startsWith('❌')">{{ adminMessage }}</div>
+  </div>
+  <!-- Report button -->
+  <div class="unified-buttons">
+    <button class="report-button" (click)="generateReport()">📊 Generate Student Report</button>
+  </div>
+
+  <!-- Report progress -->
+  <div *ngIf="reportJobId" class="report-status">
+    <p>{{ reportMessage }}</p>
+    <div class="progress-bar-container">
+      <div class="progress-bar" [style.width.%]="reportProgress"></div>
+    </div>
+    <p class="percent">{{ reportProgress }}%</p>
+  </div>
+
+  <!-- Students and Courses -->
   <div class="side-by-side">
+    <!-- Students panel -->
     <div class="panel">
       <h3>Students</h3>
       <table>
@@ -45,6 +82,7 @@
       </div>
     </div>
 
+    <!-- Courses panel -->
     <div class="panel">
       <h3>Courses</h3>
       <table>
@@ -67,14 +105,13 @@
     </div>
   </div>
 
-
- 
-
+  <!-- Graph -->
   <div class="graph-section">
     <app-percentage-graph></app-percentage-graph>
   </div>
 
-   <div class="mail-section">
+  <!-- Mail -->
+  <div class="mail-section">
     <h3>Send Mail</h3>
     <form (ngSubmit)="sendMail()">
       <label>To</label>
@@ -93,7 +130,4 @@
     </form>
     <div class="mail-status" [class.error]="mailMessage.startsWith('❌')">{{ mailMessage }}</div>
   </div>
-  
- 
-
 </div>

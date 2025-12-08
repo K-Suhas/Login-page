@@ -2,12 +2,10 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './Service/AuthService';
-import { CommonModule } from '@angular/common'; 
+import { CommonModule } from '@angular/common';
 
 declare global {
-  interface Window {
-    google: any;
-  }
+  interface Window { google: any; }
 }
 
 @Component({
@@ -15,7 +13,7 @@ declare global {
   standalone: true,
   templateUrl: './app.html',
   styleUrls: ['./app.css'],
-  imports: [RouterOutlet,CommonModule]
+  imports: [RouterOutlet, CommonModule]
 })
 export class AppComponent implements OnInit, AfterViewInit {
   message = '';
@@ -24,7 +22,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   constructor(public router: Router, private auth: AuthService) {}
 
   ngOnInit() {
-    // Sync login state with route
     this.router.events.pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         const isLoginRoute = this.router.url === '/login';
@@ -53,7 +50,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       window.google.accounts.id.initialize({
         client_id: '285503942744-fbj2r4pof7nhcq1259g1gk6c6abt0tu4.apps.googleusercontent.com',
         callback: (response: any) => {
-          console.log('Google ID token:', response.credential);
           this.verifyTokenWithBackend(response.credential);
         }
       });
@@ -90,26 +86,15 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   redirectByRole(role: string | null) {
-  switch (role) {
-    case 'ADMIN':
-      this.router.navigate(['/admin-dashboard']);
-      break;
-    case 'TEACHER':
-      this.router.navigate(['/home']);
-      break;
-    case 'STUDENT':
-      this.router.navigate(['/home']);
-      break;
-    default:
-      // If role is null or unknown, go to login
-      this.router.navigate(['/login']);
+    switch (role) {
+      case 'ADMIN': this.router.navigate(['/admin-dashboard']); break;
+      case 'TEACHER': this.router.navigate(['/home']); break;
+      case 'STUDENT': this.router.navigate(['/home']); break;
+      default: this.router.navigate(['/login']);
+    }
   }
-}
 
-
-  isLoggedIn(): boolean {
-    return this.auth.isLoggedIn();
-  }
+  isLoggedIn(): boolean { return this.auth.isLoggedIn(); }
 
   logout() {
     this.auth.logout();

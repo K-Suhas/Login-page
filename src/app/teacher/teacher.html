@@ -1,0 +1,85 @@
+<div class="container" *ngIf="role === 'ADMIN' || role === 'TEACHER'">
+  <h2>Teacher Management</h2>
+
+  <!-- Search -->
+  <div class="search-row">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, or email" />
+    <button class="secondary-button" (click)="searchTeachers()">Search</button>
+    <button class="secondary-button" (click)="searchQuery=''; getAllTeachers()">Clear</button>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-row">
+    <button *ngIf="isAdmin()" class="primary-button" (click)="toggleAddForm()">Add Teacher</button>
+    <button class="primary-button" (click)="getAllTeachers()">Get All Teachers</button>
+  </div>
+
+  <!-- Add Form -->
+  <div *ngIf="isAdmin() && showAddForm" class="form-group">
+    <h3>Add New Teacher</h3>
+    <div class="form-row">
+      <input type="text" [(ngModel)]="addForm.name" placeholder="Name" />
+      <input type="email" [(ngModel)]="addForm.email" placeholder="Email" />
+      <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
+    </div>
+    <div class="form-row">
+      <button class="primary-button" (click)="submitAdd()">Submit</button>
+      <button class="secondary-button" (click)="toggleAddForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Update Form -->
+  <div *ngIf="isAdmin() && showUpdateForm" class="form-group">
+    <h3>Update Teacher</h3>
+    <div class="form-row">
+      <input type="text" [(ngModel)]="updateId" placeholder="Teacher ID (required)" />
+      <input type="text" [(ngModel)]="updateForm.name" placeholder="Name" />
+      <input type="email" [(ngModel)]="updateForm.email" placeholder="Email" />
+      <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department" />
+    </div>
+    <div class="form-row">
+      <button class="primary-button" (click)="submitUpdate()">Update</button>
+      <button class="secondary-button" (click)="toggleUpdateForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <table *ngIf="showTable && teachers.length > 0">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Department</th>
+        <th *ngIf="isAdmin()">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let t of teachers">
+        <td>{{ t.id }}</td>
+        <td>{{ t.name }}</td>
+        <td>{{ t.email }}</td>
+        <td>{{ t.dept }}</td>
+        <td *ngIf="isAdmin()">
+          <div class="row-actions">
+            <button class="primary-button" (click)="prepareUpdate(t)">Update</button>
+            <button class="danger-button" (click)="deleteTeacher(t.id)">Delete</button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- No teachers -->
+  <div *ngIf="showTable && teachers.length === 0" class="message-box">
+    No teachers found.
+  </div>
+
+  <!-- Message -->
+  <div *ngIf="message" class="message-box" [ngClass]="{
+    'success': !message.toLowerCase().includes('error'),
+    'error': message.toLowerCase().includes('error')
+  }">
+    {{ message }}
+  </div>
+</div>
