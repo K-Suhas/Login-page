@@ -345,19 +345,23 @@ td {
   border-radius: 8px;
   transition: width 0.5s ease; /* smooth animation */
 }
+/* ✅ Narrower sidebar */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
-  width: 240px;
+  width: 180px; /* reduced from 240px */
   height: 100%;
   background: linear-gradient(135deg, #1e3a8a, #3b82f6);
   color: white;
-  padding: 20px;
+  padding: 15px;
   box-shadow: 2px 0 8px rgba(0,0,0,0.2);
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
 }
 
+/* ✅ Sidebar header spacing */
 .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -365,23 +369,40 @@ td {
   margin-bottom: 20px;
 }
 
-.sidebar h3 {
-  margin: 0;
-}
-
-.sidebar-button, .home-button {
+/* ✅ Make ALL buttons uniform width */
+.sidebar-button,
+.sidebar .home-button {
+  width: 100%;               /* full width */
   display: block;
   background: #2563eb;
   color: white;
   border: none;
-  padding: 10px 16px;
-  margin-bottom: 12px;
+  padding: 12px 14px;        /* consistent padding */
+  margin-bottom: 10px;
   border-radius: 6px;
   cursor: pointer;
   text-align: left;
   transition: background 0.3s ease;
+  box-sizing: border-box;    /* ensures perfect alignment */
 }
 
-.sidebar-button:hover, .home-button:hover {
+/* ✅ Hover effect */
+.sidebar-button:hover,
+.sidebar .home-button:hover {
+  background: #1e40af;
+}
+/* ✅ Smaller Home button ONLY inside sidebar */
+.sidebar .home-button {
+  width: 45%;
+  padding: 5px 8px;     /* smaller padding */
+  font-size: 13px;       /* smaller text */
+  margin-bottom: 10px;
+  background: #2563eb;
+  border-radius: 6px;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.sidebar .home-button:hover {
   background: #1e40af;
 }
