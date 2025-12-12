@@ -59,67 +59,91 @@ export class CourseComponent {
 
   // Get all courses (admin: paginated from backend, teacher: list by department)
   getAllCourses() {
-    const role = this.auth.getRole();
-    const deptId = this.auth.getDepartmentId();
+  const role = this.auth.getRole();
+  const deptId = this.auth.getDepartmentId();
+  const email = this.auth.getEmail();
 
-    if (role === 'ADMIN') {
-      this.courseService.getAllCourses(this.currentPage, this.pageSize).subscribe({
-        next: data => {
-          this.filteredCourses = data.content ?? [];
-          this.totalPages = data.totalPages ?? 1;
-          this.setMessage(`${data.totalElements ?? this.filteredCourses.length} course(s) found.`);
-        },
-        error: err => this.setMessage(err.error?.message || err.message || 'Failed to load courses')
-      });
-    } else if (deptId != null) {
-      this.courseService.getCoursesByDepartment(deptId).subscribe({
-        next: list => {
-          // Teacher gets a plain list; compute client-side pagination if needed
-          this.filteredCourses = list ?? [];
-          this.totalPages = Math.ceil(this.filteredCourses.length / this.pageSize) || 1;
-          this.currentPage = 0;
-        },
-        error: err => this.setMessage(err.error?.message || err.message || 'Failed to load courses')
-      });
-    } else {
-      this.filteredCourses = [];
-      this.totalPages = 0;
-      this.setMessage('Not authorized to view courses.');
-    }
+  if (role === 'ADMIN') {
+    this.courseService.getAllCourses(this.currentPage, this.pageSize).subscribe({
+      next: data => {
+        this.filteredCourses = data.content ?? [];
+        this.totalPages = data.totalPages ?? 1;
+        this.setMessage(`${data.totalElements ?? this.filteredCourses.length} course(s) found.`);
+      },
+      error: err => this.setMessage(err.error?.message || err.message || 'Failed to load courses')
+    });
+  } else if (role === 'TEACHER' && deptId != null) {
+    this.courseService.getCoursesByDepartment(deptId).subscribe({
+      next: list => {
+        this.filteredCourses = list ?? [];
+        this.totalPages = Math.ceil(this.filteredCourses.length / this.pageSize) || 1;
+        this.currentPage = 0;
+      },
+      error: err => this.setMessage(err.error?.message || err.message || 'Failed to load courses')
+    });
+  } else if (role === 'STUDENT' && email) {
+    this.courseService.getRestrictedCourses(email).subscribe({
+      next: list => {
+        this.filteredCourses = list ?? [];
+        this.totalPages = Math.ceil(this.filteredCourses.length / this.pageSize) || 1;
+        this.currentPage = 0;
+      },
+      error: err => this.setMessage(err.error?.message || err.message || 'Failed to load courses')
+    });
+  } else {
+    this.filteredCourses = [];
+    this.totalPages = 0;
+    this.setMessage('Not authorized to view courses.');
   }
+}
+
 
   // Search courses by query (admin: global, teacher: restricted to department)
   searchCourses() {
-    const role = this.auth.getRole();
-    const deptId = this.auth.getDepartmentId();
+  const role = this.auth.getRole();
+  const deptId = this.auth.getDepartmentId();
+  const email = this.auth.getEmail();
 
-    if (!this.searchQuery.trim()) {
-      this.setMessage('Please enter a search term.');
-      return;
-    }
-
-    if (role === 'ADMIN') {
-      this.courseService.searchCourses(this.searchQuery, this.currentPage, this.pageSize).subscribe({
-        next: data => {
-          this.filteredCourses = data.content ?? [];
-          this.totalPages = data.totalPages ?? 1;
-          this.setMessage(`${data.totalElements ?? this.filteredCourses.length} course(s) matched.`);
-        },
-        error: err => this.setMessage(err.error?.message || err.message || 'Failed to search courses')
-      });
-    } else if (deptId != null) {
-      this.courseService.searchCoursesByDepartment(this.searchQuery, deptId, this.currentPage, this.pageSize).subscribe({
-        next: data => {
-          this.filteredCourses = data.content ?? [];
-          this.totalPages = data.totalPages ?? 1;
-          this.setMessage(`${data.totalElements ?? this.filteredCourses.length} course(s) matched.`);
-        },
-        error: err => this.setMessage(err.error?.message || err.message || 'Failed to search courses')
-      });
-    } else {
-      this.setMessage('Not authorized to search courses.');
-    }
+  if (!this.searchQuery.trim()) {
+    this.setMessage('Please enter a search term.');
+    return;
   }
+
+  if (role === 'ADMIN') {
+    this.courseService.searchCourses(this.searchQuery, this.currentPage, this.pageSize).subscribe({
+      next: data => {
+        this.filteredCourses = data.content ?? [];
+        this.totalPages = data.totalPages ?? 1;
+        this.setMessage(`${data.totalElements ?? this.filteredCourses.length} course(s) matched.`);
+      },
+      error: err => this.setMessage(err.error?.message || err.message || 'Failed to search courses')
+    });
+  } else if (role === 'TEACHER' && deptId != null) {
+    this.courseService.searchCoursesByDepartment(this.searchQuery, deptId, this.currentPage, this.pageSize).subscribe({
+      next: data => {
+        this.filteredCourses = data.content ?? [];
+        this.totalPages = data.totalPages ?? 1;
+        this.setMessage(`${data.totalElements ?? this.filteredCourses.length} course(s) matched.`);
+      },
+      error: err => this.setMessage(err.error?.message || err.message || 'Failed to search courses')
+    });
+  } else if (role === 'STUDENT' && email) {
+    this.courseService.getRestrictedCourses(email).subscribe({
+      next: list => {
+        this.filteredCourses = (list ?? []).filter(c =>
+          c.name?.toLowerCase().includes(this.searchQuery.trim().toLowerCase())
+        );
+        this.totalPages = Math.ceil(this.filteredCourses.length / this.pageSize) || 1;
+        this.currentPage = 0;
+        this.setMessage(`${this.filteredCourses.length} course(s) matched.`);
+      },
+      error: err => this.setMessage(err.error?.message || err.message || 'Failed to search courses')
+    });
+  } else {
+    this.setMessage('Not authorized to search courses.');
+  }
+}
+
 
   // Exact ID lookup
   getCourseById() {

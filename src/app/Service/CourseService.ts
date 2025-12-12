@@ -103,4 +103,11 @@ getCoursesByDepartment(deptId: number): Observable<CourseDTO[]> {
       headers: this.getAuthHeaders()
     }).pipe(catchError(this.handleError));
   }
+  getRestrictedCourses(email: string): Observable<CourseDTO[]> {
+  return this.http.get<CourseDTO[]>(`${this.baseUrl}/restricted-courses?email=${encodeURIComponent(email)}`, {
+    headers: this.getAuthHeaders()
+  });
+}
+
+
 }

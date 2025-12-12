@@ -63,6 +63,12 @@ export class StudentService {
       responseType: 'text'
     }).pipe(catchError(this.handleError));
   }
+  getRestrictedStudents(email: string): Observable<any> {
+  return this.http.get(`${this.baseUrl}/restricted?email=${encodeURIComponent(email)}`, {
+    headers: this.getAuthHeaders()
+  });
+}
+
 
   updateStudent(id: number, student: StudentDTO): Observable<string> {
     return this.http.put(`${this.baseUrl}/${id}`, student, {

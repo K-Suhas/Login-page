@@ -146,45 +146,62 @@ export class StudentComponent implements OnInit {
 
   // Data fetch
   getAllStudents(): void {
-    const role = this.auth.getRole();
-    const deptId = this.auth.getDepartmentId();
+  const role = this.auth.getRole();
+  const deptId = this.auth.getDepartmentId();
+  const email = this.auth.getEmail();
 
-    if (role === 'ADMIN') {
-      this.studentService.getAllStudents(this.currentPage, this.pageSize).subscribe({
-        next: (data) => {
-          this.filteredStudents = data.content ?? [];
-          this.totalPages = data.totalPages ?? 1;
-          this.showTable = true;
-          this.setMessage('');
-        },
-        error: (err) => {
-          const msg = err.error?.message || err.message || 'Failed to load students';
-          this.setMessage(msg);
-          this.filteredStudents = [];
-          this.showTable = false;
-        }
-      });
-    } else if (role === 'TEACHER' && deptId != null) {
-      this.studentService.getStudentsByDepartment(deptId, this.currentPage, this.pageSize).subscribe({
-        next: (data) => {
-          this.filteredStudents = data.content ?? [];
-          this.totalPages = data.totalPages ?? 1;
-          this.showTable = true;
-          this.setMessage('');
-        },
-        error: (err) => {
-          const msg = err.error?.message || err.message || 'Failed to load students';
-          this.setMessage(msg);
-          this.filteredStudents = [];
-          this.showTable = false;
-        }
-      });
-    } else {
-      this.filteredStudents = [];
-      this.showTable = false;
-      this.setMessage('Not authorized to view students.');
-    }
+  if (role === 'ADMIN') {
+    this.studentService.getAllStudents(this.currentPage, this.pageSize).subscribe({
+      next: (data) => {
+        this.filteredStudents = data.content ?? [];
+        this.totalPages = data.totalPages ?? 1;
+        this.showTable = true;
+        this.setMessage('');
+      },
+      error: (err) => {
+        const msg = err.error?.message || err.message || 'Failed to load students';
+        this.setMessage(msg);
+        this.filteredStudents = [];
+        this.showTable = false;
+      }
+    });
+  } else if (role === 'TEACHER' && deptId != null) {
+    this.studentService.getStudentsByDepartment(deptId, this.currentPage, this.pageSize).subscribe({
+      next: (data) => {
+        this.filteredStudents = data.content ?? [];
+        this.totalPages = data.totalPages ?? 1;
+        this.showTable = true;
+        this.setMessage('');
+      },
+      error: (err) => {
+        const msg = err.error?.message || err.message || 'Failed to load students';
+        this.setMessage(msg);
+        this.filteredStudents = [];
+        this.showTable = false;
+      }
+    });
+  } else if (role === 'STUDENT' && email) {
+    this.studentService.getRestrictedStudents(email).subscribe({
+      next: (data) => {
+        this.filteredStudents = data.content ?? [];
+        this.totalPages = data.totalPages ?? 1;
+        this.showTable = true;
+        this.setMessage('');
+      },
+      error: (err) => {
+        const msg = err.error?.message || err.message || 'Failed to load students';
+        this.setMessage(msg);
+        this.filteredStudents = [];
+        this.showTable = false;
+      }
+    });
+  } else {
+    this.filteredStudents = [];
+    this.showTable = false;
+    this.setMessage('Not authorized to view students.');
   }
+}
+
 
   previousPage(): void {
     if (this.currentPage > 0) {
@@ -202,57 +219,79 @@ export class StudentComponent implements OnInit {
 
   // Search
   searchStudents(): void {
-    if (!this.searchQuery.trim()) {
-      this.setMessage('Please enter a search term.');
-      this.filteredStudents = [];
-      this.showTable = false;
-      return;
-    }
-
-    const role = this.auth.getRole();
-    const deptId = this.auth.getDepartmentId();
-    const q = this.searchQuery.trim().toLowerCase();
-
-    if (role === 'ADMIN') {
-      this.studentService.searchStudents(this.searchQuery.trim(), this.currentPage, this.pageSize).subscribe({
-        next: (data) => {
-          this.filteredStudents = data.content ?? [];
-          this.totalPages = data.totalPages ?? 1;
-          this.showTable = true;
-          this.setMessage(this.filteredStudents.length ? '' : 'No students found.');
-        },
-        error: (err) => {
-          const msg = err.error?.message || err.message || 'Search failed';
-          this.setMessage(msg);
-          this.filteredStudents = [];
-          this.showTable = false;
-        }
-      });
-    } else if (role === 'TEACHER' && deptId != null) {
-      this.studentService.getStudentsByDepartment(deptId, this.currentPage, this.pageSize).subscribe({
-        next: (data) => {
-          this.filteredStudents = (data.content ?? []).filter(s =>
-            s.name?.toLowerCase() === q ||
-            s.email?.toLowerCase() === q ||
-            s.id?.toString() === this.searchQuery
-          );
-          this.totalPages = data.totalPages ?? 1;
-          this.showTable = true;
-          this.setMessage(this.filteredStudents.length ? '' : 'No students found.');
-        },
-        error: (err) => {
-          const msg = err.error?.message || err.message || 'Search failed';
-          this.setMessage(msg);
-          this.filteredStudents = [];
-          this.showTable = false;
-        }
-      });
-    } else {
-      this.setMessage('Not authorized to search students.');
-      this.filteredStudents = [];
-      this.showTable = false;
-    }
+  if (!this.searchQuery.trim()) {
+    this.setMessage('Please enter a search term.');
+    this.filteredStudents = [];
+    this.showTable = false;
+    return;
   }
+
+  const role = this.auth.getRole();
+  const deptId = this.auth.getDepartmentId();
+  const email = this.auth.getEmail();
+  const q = this.searchQuery.trim().toLowerCase();
+
+  if (role === 'ADMIN') {
+    this.studentService.searchStudents(this.searchQuery.trim(), this.currentPage, this.pageSize).subscribe({
+      next: (data) => {
+        this.filteredStudents = data.content ?? [];
+        this.totalPages = data.totalPages ?? 1;
+        this.showTable = true;
+        this.setMessage(this.filteredStudents.length ? '' : 'No students found.');
+      },
+      error: (err) => {
+        const msg = err.error?.message || err.message || 'Search failed';
+        this.setMessage(msg);
+        this.filteredStudents = [];
+        this.showTable = false;
+      }
+    });
+  } else if (role === 'TEACHER' && deptId != null) {
+    this.studentService.getStudentsByDepartment(deptId, this.currentPage, this.pageSize).subscribe({
+      next: (data) => {
+        this.filteredStudents = (data.content ?? []).filter(s =>
+          s.name?.toLowerCase() === q ||
+          s.email?.toLowerCase() === q ||
+          s.id?.toString() === this.searchQuery
+        );
+        this.totalPages = data.totalPages ?? 1;
+        this.showTable = true;
+        this.setMessage(this.filteredStudents.length ? '' : 'No students found.');
+      },
+      error: (err) => {
+        const msg = err.error?.message || err.message || 'Search failed';
+        this.setMessage(msg);
+        this.filteredStudents = [];
+        this.showTable = false;
+      }
+    });
+  } else if (role === 'STUDENT' && email) {
+    this.studentService.getRestrictedStudents(email).subscribe({
+      next: (data) => {
+        this.filteredStudents = (data.content ?? []).filter((s: StudentDTO) =>
+        s.name?.toLowerCase() === q ||
+        s.email?.toLowerCase() === q ||
+        s.id?.toString() === this.searchQuery
+        );
+
+        this.totalPages = data.totalPages ?? 1;
+        this.showTable = true;
+        this.setMessage(this.filteredStudents.length ? '' : 'No students found.');
+      },
+      error: (err) => {
+        const msg = err.error?.message || err.message || 'Search failed';
+        this.setMessage(msg);
+        this.filteredStudents = [];
+        this.showTable = false;
+      }
+    });
+  } else {
+    this.setMessage('Not authorized to search students.');
+    this.filteredStudents = [];
+    this.showTable = false;
+  }
+}
+
 
   // Single student lookup
   getStudentById(): void {
