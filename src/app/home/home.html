@@ -1,9 +1,6 @@
 <div class="home-container">
   <!-- Header row: Admin Dashboard button left, heading center -->
   <div class="home-header">
-    <button *ngIf="isAdmin" class="dashboard-button" routerLink="/admin-dashboard">
-      🔙 Admin Dashboard
-    </button>
     
   </div>
 <h2>Welcome to SENSEI Home</h2>
@@ -12,7 +9,7 @@
     
     <button class="primary-button" (click)="goToStudentInfo()">Student Info</button>
     <button class="primary-button" (click)="goToCourses()">Course</button>
-    <button class="primary-button" routerLink="/marksheet">Marksheet</button>
-    <button *ngIf="canManageTeachers()" class="primary-button" routerLink="/teachers">Teachers</button>
+    <button class="primary-button" (click)="goToMarksheet()">Marksheet</button>
+    <button *ngIf="canManageTeachers()" class="primary-button" (click)="goToTeacherManagement()">Teachers</button>
   </div>
 </div>

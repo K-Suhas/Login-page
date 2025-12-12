@@ -6,6 +6,29 @@ body, html {
   justify-content: center;
   align-items: center;
 }
+select {
+  min-width: 200px;
+  padding: 6px;
+  font-size: 14px;
+}
+.message-banner {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.error-banner {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.success-banner {
+  background-color: #d4edda;
+  color: #155724;
+}
+
 
 .container {
   width: 100%;
@@ -220,32 +243,3 @@ tr:hover {
   color: #2c3e50;
 }
 
-/* Message Box */
-.message-box {
-  margin-top: 15px;
-  padding: 10px;
-  border-radius: 5px;
-  font-weight: bold;
-  text-align: center;
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.message-box.success {
-  background-color: #e0f7e9;
-  color: #2e7d32;
-}
-
-.message-box.error {
-  background-color: red;
-  color: white;
-}
-
-/* Animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.row-actions {
-  display: flex;
-  gap: 10px;
-}

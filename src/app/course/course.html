@@ -1,6 +1,5 @@
 <div class="container">
   <h2>Course Management</h2>
-
   <!-- Search and Clear -->
   <div class="search-row">
     <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name or ID" />
@@ -26,6 +25,16 @@
   <div *ngIf="canManageCourses() && showAddForm" class="form-group">
     <h3>Add New Course</h3>
     <div class="form-row">
+      <!-- Department dropdown -->
+      <select [(ngModel)]="addForm.departmentId">
+       <option [ngValue]="undefined">-- Select Department --</option>
+       <option *ngFor="let dept of departments" [ngValue]="dept.id">
+        {{ dept.name }}
+       </option>
+      </select>
+
+    </div>
+    <div class="form-row">
       <input type="text" [(ngModel)]="addForm.name" placeholder="Course Name" />
     </div>
     <div class="form-row">
@@ -40,6 +49,8 @@
     <div class="form-row">
       <input type="text" [(ngModel)]="updateId" placeholder="Course ID (required)" />
       <input type="text" [(ngModel)]="updateForm.name" placeholder="Name (optional)" />
+      <!-- Department shown but disabled -->
+      <input type="text" [value]="updateForm.departmentName" disabled />
     </div>
     <div class="form-row">
       <button class="primary-button" (click)="submitUpdate()">Update</button>
@@ -53,6 +64,7 @@
       <tr>
         <th><i class="fas fa-id-badge"></i> ID</th>
         <th><i class="fas fa-book"></i> Name</th>
+        <th><i class="fas fa-building"></i> Department</th>
         <th><i class="fas fa-users"></i> Enrolled Students</th>
         <th *ngIf="canManageCourses()"><i class="fas fa-cogs"></i> Actions</th>
       </tr>
@@ -61,19 +73,18 @@
       <tr *ngFor="let course of filteredCourses">
         <td>{{ course.id }}</td>
         <td>{{ course.name }}</td>
+        <td>{{ course.departmentName }}</td>
         <td>{{ course.studentNames?.join(', ') || 'None' }}</td>
         <td *ngIf="canManageCourses()">
-         <div class="row-actions">
-          <button class="danger-button" (click)="deleteCourse(course.id)">
-           <i class="fas fa-trash"></i> Delete
-          </button>
-
-          <button class="primary-button" (click)="prepareUpdate(course)">
-            <i class="fas fa-edit"></i> Update
-          </button>
-        </div>
+          <div class="row-actions">
+            <button class="danger-button" (click)="deleteCourse(course.id)">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+            <button class="primary-button" (click)="prepareUpdate(course)">
+              <i class="fas fa-edit"></i> Update
+            </button>
+          </div>
         </td>
-
       </tr>
     </tbody>
   </table>
@@ -93,4 +104,6 @@
        [ngClass]="message.toLowerCase().includes('error') ? 'fa-exclamation-circle' : 'fa-check-circle'"></i>
     {{ message }}
   </div>
+  
+
 </div>

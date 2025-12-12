@@ -1,131 +1,148 @@
+<!-- src/app/student/student.html -->
 <div class="container">
   <h2>Student Management</h2>
 
-  <!-- Search and Clear -->
-  <div class="search-row">
-    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, ID, DOB or Email" />
-    <button class="secondary-button" (click)="searchStudents()">
-      <i class="fas fa-search"></i> Search
-    </button>
-    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllStudents()">
-      <i class="fas fa-times"></i> Clear
-    </button>
+  <!-- Banner -->
+  <div *ngIf="message" class="message-banner"
+       [ngClass]="{'error-banner': message.toLowerCase().includes('error') || message.toLowerCase().includes('required') || message.toLowerCase().includes('not found'),
+                   'success-banner': !message.toLowerCase().includes('error') && !message.toLowerCase().includes('required') && !message.toLowerCase().includes('not found')}">
+    {{ message }}
   </div>
 
-  <!-- Action Buttons -->
-  <div class="action-row unified-buttons">
-    <button *ngIf="canEditStudents()" class="primary-button large-button" (click)="toggleAddForm()">
-      <i class="fas fa-plus"></i> Add Student
-    </button>
-    <button class="primary-button large-button" (click)="getAllStudents()">
-      <i class="fas fa-list"></i> Get All Students
-    </button>
+  <!-- Search -->
+  <div class="search-row">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search students" />
+    <button class="secondary-button" (click)="searchStudents()">Search</button>
+    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllStudents()">Clear</button>
   </div>
+
+  <!-- Actions -->
+  <div class="action-row unified-buttons">
+    <button *ngIf="canEditStudents()" class="primary-button" (click)="toggleAddForm()">Add Student</button>
+    <button *ngIf="auth.getRole() === 'ADMIN'" class="primary-button" (click)="toggleBulkForm()">Bulk Upload</button>
+    <button class="primary-button" (click)="getAllStudents()">Get All Students</button>
+  </div>
+  <!-- Bulk Upload Form (ADMIN only) -->
+<div *ngIf="showBulkForm && auth.getRole() === 'ADMIN'" class="form-group">
+  <h3>Bulk Upload Students (CSV)</h3>
+  <input type="file" (change)="handleFileUpload($event)" accept=".csv" />
+  <div class="form-row">
+    <button class="primary-button" (click)="submitBulkStudents()">Upload</button>
+    <button class="secondary-button" (click)="toggleBulkForm()">Cancel</button>
+  </div>
+</div>
+
 
   <!-- Add Form -->
-  <div *ngIf="canEditStudents() && showAddForm" class="form-group">
-    <h3>Add New Student</h3>
+  <div *ngIf="showAddForm" class="form-group">
+    <h3>Add Student</h3>
     <div class="form-row">
       <input type="text" [(ngModel)]="addForm.name" placeholder="Name" />
       <input type="date" [(ngModel)]="addForm.dob" />
-      <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
       <input type="email" [(ngModel)]="addForm.email" placeholder="Email" />
     </div>
-    <div class="form-row">
-      <label>Select Course:</label>
-      <select [(ngModel)]="selectedCourse" class="dropdown">
-        <option value="" disabled selected>Select a course</option>
-        <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
+
+    <!-- Department (Admin: dropdown, Teacher: fixed) -->
+    <div class="form-row" *ngIf="auth.getRole() === 'ADMIN'">
+      <label>Select Department:</label>
+      <select [(ngModel)]="addForm.departmentName" (ngModelChange)="onDepartmentChange($event)">
+        <option [ngValue]="undefined">-- Select Department --</option>
+        <option *ngFor="let d of departments" [value]="d.name">{{ d.name }}</option>
       </select>
     </div>
+
+    <div class="form-row" *ngIf="auth.getRole() === 'TEACHER'">
+      <label>Department:</label>
+      <input type="text" [value]="auth.getDepartmentName()" disabled />
+    </div>
+
+    <!-- Course dropdown -->
+    <div class="form-row">
+      <label>Select Course:</label>
+      <select [(ngModel)]="selectedCourse" [disabled]="availableCourses.length === 0">
+        <option *ngFor="let c of availableCourses" [value]="c">{{ c }}</option>
+      </select>
+    </div>
+
+    <div *ngIf="auth.getRole() === 'ADMIN' && (!addForm.departmentName || availableCourses.length === 0)" class="message-banner">
+      Select a department to load its courses.
+    </div>
+
     <div class="form-row">
       <button class="primary-button" (click)="submitAdd()">Submit</button>
       <button class="secondary-button" (click)="toggleAddForm()">Cancel</button>
     </div>
-
-    <hr />
-
-    <h4>Upload Multiple Students</h4>
-    <div class="form-row upload-center">
-      <input type="file" (change)="handleFileUpload($event)" accept=".csv" />
-      <button class="primary-button" (click)="submitBulkStudents()">Upload Students</button>
-    </div>
-  </div>
-
-  <!-- Update Form -->
-  <div *ngIf="canEditStudents() && showUpdateForm" class="form-group">
-    <h3>Update Student</h3>
-    <div class="form-row">
-      <input type="text" [(ngModel)]="updateId" placeholder="Student ID (required)" />
-      <input type="text" [(ngModel)]="updateForm.name" placeholder="Name" />
-      <input type="date" [(ngModel)]="updateForm.dob" />
-      <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department" />
-      <input type="email" [(ngModel)]="updateForm.email" placeholder="Email" />
-    </div>
-    <div class="form-row">
-      <label>Update Course:</label>
-      <select [(ngModel)]="selectedUpdateCourse" class="dropdown">
-        <option value="" disabled selected>Select a course</option>
-        <option *ngFor="let course of availableCourses" [value]="course">{{ course }}</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <button class="primary-button" (click)="submitUpdate()">Update</button>
-      <button class="secondary-button" (click)="toggleUpdateForm()">Cancel</button>
-    </div>
   </div>
 
   <!-- Table -->
-  <table *ngIf="showTable && filteredStudents.length > 0">
+  <table *ngIf="showTable">
     <thead>
       <tr>
         <th>ID</th>
         <th>Name</th>
         <th>DOB</th>
-        <th>Department</th>
         <th>Email</th>
+        <th>Department</th>
         <th>Courses</th>
         <th *ngIf="canEditStudents()">Actions</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let student of filteredStudents">
-        <td>{{ student.id }}</td>
-        <td>{{ student.name }}</td>
-        <td>{{ student.dob | date:'mediumDate' }}</td>
-        <td>{{ student.dept }}</td>
-        <td>{{ student.email }}</td>
-        <td>{{ student.courseNames?.join(', ') || 'None' }}</td>
+      <tr *ngFor="let s of filteredStudents">
+        <td>{{ s.id }}</td>
+        <td>{{ s.name }}</td>
+        <td>{{ s.dob }}</td>
+        <td>{{ s.email }}</td>
+        <td>{{ s.departmentName }}</td>
+        <td>{{ s.courseNames?.join(', ') }}</td>
         <td *ngIf="canEditStudents()">
-          <div class="row-actions">
-            <button class="danger-button" (click)="deleteStudent(student.id)">
-              <i class="fas fa-trash"></i> Delete
-            </button>
-            <button class="primary-button" (click)="prepareUpdate(student)">
-              <i class="fas fa-edit"></i> Update
-            </button>
-          </div>
+          <button class="primary-button" (click)="prepareUpdate(s)">Update</button>
+          <button class="danger-button" (click)="deleteStudent(s.id)">Delete</button>
         </td>
       </tr>
     </tbody>
   </table>
 
   <!-- Pagination -->
-  <div class="pagination-controls" *ngIf="showTable && totalPages > 1">
+  <div class="pagination-controls" *ngIf="totalPages > 1">
     <button (click)="previousPage()" [disabled]="currentPage === 0">Previous</button>
     <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
     <button (click)="nextPage()" [disabled]="currentPage + 1 >= totalPages">Next</button>
   </div>
 
-  <!-- Message -->
-  <div *ngIf="message" class="message-box" [ngClass]="{
-    'success': !message.includes('Error'),
-    'error': message.includes('Error')
-  }">
-    <i class="fas" [ngClass]="{
-      'fa-check-circle': !message.includes('Error'),
-      'fa-exclamation-circle': message.includes('Error')
-    }"></i>
-    {{ message }}
+  <!-- Update Form -->
+  <div *ngIf="showUpdateForm" class="form-group">
+    <h3>Update Student</h3>
+    <div class="form-row">
+      <input type="text" [(ngModel)]="updateForm.name" placeholder="Name" />
+      <input type="date" [(ngModel)]="updateForm.dob" />
+      <input type="email" [(ngModel)]="updateForm.email" placeholder="Email" />
+    </div>
+
+    <!-- Department (Admin: dropdown, Teacher: fixed) -->
+    <div class="form-row" *ngIf="auth.getRole() === 'ADMIN'">
+      <label>Department:</label>
+      <select [(ngModel)]="updateForm.departmentName" (ngModelChange)="onUpdateDepartmentChange($event)">
+        <option *ngFor="let d of departments" [value]="d.name">{{ d.name }}</option>
+      </select>
+    </div>
+
+    <div class="form-row" *ngIf="auth.getRole() === 'TEACHER'">
+      <label>Department:</label>
+      <input type="text" [value]="auth.getDepartmentName()" disabled />
+    </div>
+
+    <!-- Course -->
+    <div class="form-row">
+      <label>Course:</label>
+      <select [(ngModel)]="selectedUpdateCourse" [disabled]="availableCourses.length === 0">
+        <option *ngFor="let c of availableCourses" [value]="c">{{ c }}</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <button class="primary-button" (click)="submitUpdate()">Update</button>
+      <button class="secondary-button" (click)="toggleUpdateForm()">Cancel</button>
+    </div>
   </div>
 </div>

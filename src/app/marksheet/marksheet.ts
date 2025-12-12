@@ -16,15 +16,17 @@ import { StudentReportService, StudentMarksheetDTO } from '../Service/StudentRep
 export class MarksheetComponent implements OnInit {
   marksForm!: FormGroup;
   subjects = ['DBMS', 'DATA STRUCTURES', 'DAA', 'ADE', 'MES'];
+
   message = '';
   summary: MarksResponseDTO | null = null;
 
   searchStudentId: number | null = null;
   searchSemester: number = 1;
+
   page = 0;
   size = 5;
-  showStudentSummary = false;
 
+  showStudentSummary = false;
   studentSummaryPage: StudentMarksSummaryDTO[] = [];
   summaryPage = 0;
   summaryTotalPages = 0;
@@ -51,12 +53,13 @@ export class MarksheetComponent implements OnInit {
         )
       )
     });
-  }
 
-  toggleStudentSummary(): void {
-    this.showStudentSummary = !this.showStudentSummary;
-    if (this.showStudentSummary) {
-      this.loadStudentSummary();
+    // ✅ If student logs in, auto-fill their ID
+    if (this.auth.getRole() === 'STUDENT') {
+      const user = this.auth.getUser();
+      if (user?.id) {
+        this.marksForm.patchValue({ studentId: user.id });
+      }
     }
   }
 
@@ -64,8 +67,21 @@ export class MarksheetComponent implements OnInit {
     return this.marksForm.get('subjects') as FormArray;
   }
 
+  // ✅ Only Admin + Teacher can enter/update/delete marks
+  canEditMarks(): boolean {
+    const role = this.auth.getRole();
+    return role === 'ADMIN' || role === 'TEACHER';
+  }
+
+  // ✅ Submit marks (Admin + Teacher only)
   submitMarks(): void {
+    if (!this.canEditMarks()) {
+      this.setMessage('Not authorized to submit marks.');
+      return;
+    }
+
     const payload: MarksEntryRequest = this.marksForm.value;
+
     this.service.submitMarks(payload).subscribe({
       next: () => this.setMessage('Marks saved successfully'),
       error: err => {
@@ -75,7 +91,19 @@ export class MarksheetComponent implements OnInit {
     });
   }
 
+  // ✅ Search marksheet (Student can only search themselves)
   searchMarksheet(): void {
+    const role = this.auth.getRole();
+    const user = this.auth.getUser();
+
+    if (role === 'STUDENT') {
+      if (!user?.id) {
+        this.setMessage('Unable to determine your student ID');
+        return;
+      }
+      this.searchStudentId = user.id;
+    }
+
     if (!this.searchStudentId) {
       this.setMessage('Please enter a valid Student ID');
       return;
@@ -105,7 +133,24 @@ export class MarksheetComponent implements OnInit {
     }
   }
 
+  // ✅ Toggle summary of all students
+  toggleStudentSummary(): void {
+    this.showStudentSummary = !this.showStudentSummary;
+    if (this.showStudentSummary) {
+      this.loadStudentSummary();
+    }
+  }
+
+  // ✅ Admin + Teacher can view summary; Student cannot
   loadStudentSummary(): void {
+    const role = this.auth.getRole();
+
+    if (role === 'STUDENT') {
+      this.setMessage('Students cannot view all students summary.');
+      this.showStudentSummary = false;
+      return;
+    }
+
     this.service.getPaginatedStudentSummary(this.summaryPage, 5).subscribe({
       next: res => {
         this.studentSummaryPage = res.content;
@@ -132,15 +177,27 @@ export class MarksheetComponent implements OnInit {
     }
   }
 
+  // ✅ Update marks (Admin + Teacher only)
   updateSubjectMarks(subjectName: string): void {
+    if (!this.canEditMarks()) {
+      this.setMessage('Not authorized to update marks.');
+      return;
+    }
+
     const newMarks = prompt(`Enter new marks for ${subjectName}:`);
     const parsed = Number(newMarks);
+
     if (isNaN(parsed) || parsed < 0 || parsed > 100) {
       this.setMessage('Invalid marks');
       return;
     }
 
-    this.service.updateMarks(this.searchStudentId!, this.searchSemester, subjectName, parsed).subscribe({
+    if (!this.searchStudentId) {
+      this.setMessage('Please search a student first.');
+      return;
+    }
+
+    this.service.updateMarks(this.searchStudentId, this.searchSemester, subjectName, parsed).subscribe({
       next: msg => {
         this.setMessage(msg);
         this.searchMarksheet();
@@ -152,7 +209,13 @@ export class MarksheetComponent implements OnInit {
     });
   }
 
+  // ✅ Delete all marks (Admin + Teacher only)
   deleteAllMarks(): void {
+    if (!this.canEditMarks()) {
+      this.setMessage('Not authorized to delete marks.');
+      return;
+    }
+
     if (!this.searchStudentId) {
       this.setMessage('Please enter a valid Student ID to delete marks');
       return;
@@ -172,16 +235,18 @@ export class MarksheetComponent implements OnInit {
     });
   }
 
-  // === Individual student report (ADMIN only) ===
+  // ✅ Admin-only individual report
   loadIndividualReport(): void {
     if (this.auth.getRole() !== 'ADMIN') {
       this.setMessage('Only ADMIN can view individual reports');
       return;
     }
+
     if (!this.searchStudentId) {
       this.setMessage('Please enter a valid Student ID');
       return;
     }
+
     this.reportService.getIndividualReport(this.searchStudentId, this.searchSemester).subscribe({
       next: data => this.individualReport = data,
       error: err => {
@@ -197,10 +262,12 @@ export class MarksheetComponent implements OnInit {
       this.setMessage('Only ADMIN can download individual reports');
       return;
     }
+
     if (!this.searchStudentId) {
       this.setMessage('Please enter a valid Student ID');
       return;
     }
+
     this.reportService.downloadIndividualReport(this.searchStudentId, this.searchSemester).subscribe({
       next: blob => {
         const url = window.URL.createObjectURL(blob);
@@ -215,11 +282,6 @@ export class MarksheetComponent implements OnInit {
         this.setMessage(msg);
       }
     });
-  }
-
-  canEditMarks(): boolean {
-    const role = this.auth.getRole();
-    return role === 'ADMIN' || role === 'TEACHER';
   }
 
   private setMessage(msg: string): void {

@@ -1,26 +1,32 @@
+<!-- src/app/teacher/teacher.html -->
 <div class="container" *ngIf="role === 'ADMIN' || role === 'TEACHER'">
   <h2>Teacher Management</h2>
 
-  <!-- Search -->
-  <div class="search-row">
-    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name, dept, or email" />
-    <button class="secondary-button" (click)="searchTeachers()">Search</button>
-    <button class="secondary-button" (click)="searchQuery=''; getAllTeachers()">Clear</button>
+  <div *ngIf="message" class="message-box"
+       [ngClass]="message.toLowerCase().includes('error') ? 'error' : 'success'">
+    {{ message }}
   </div>
 
-  <!-- Action Buttons -->
+  <div class="search-row">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search exact: id, email, name, or department" />
+    <button class="secondary-button" (click)="searchTeachers()">Search</button>
+    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllTeachers()">Clear</button>
+  </div>
+
   <div class="action-row">
     <button *ngIf="isAdmin()" class="primary-button" (click)="toggleAddForm()">Add Teacher</button>
     <button class="primary-button" (click)="getAllTeachers()">Get All Teachers</button>
   </div>
 
-  <!-- Add Form -->
   <div *ngIf="isAdmin() && showAddForm" class="form-group">
     <h3>Add New Teacher</h3>
     <div class="form-row">
       <input type="text" [(ngModel)]="addForm.name" placeholder="Name" />
       <input type="email" [(ngModel)]="addForm.email" placeholder="Email" />
-      <input type="text" [(ngModel)]="addForm.dept" placeholder="Department" />
+      <select [(ngModel)]="addForm.departmentId">
+        <option [ngValue]="undefined">-- Select Department --</option>
+        <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option>
+      </select>
     </div>
     <div class="form-row">
       <button class="primary-button" (click)="submitAdd()">Submit</button>
@@ -28,14 +34,15 @@
     </div>
   </div>
 
-  <!-- Update Form -->
   <div *ngIf="isAdmin() && showUpdateForm" class="form-group">
     <h3>Update Teacher</h3>
     <div class="form-row">
       <input type="text" [(ngModel)]="updateId" placeholder="Teacher ID (required)" />
       <input type="text" [(ngModel)]="updateForm.name" placeholder="Name" />
       <input type="email" [(ngModel)]="updateForm.email" placeholder="Email" />
-      <input type="text" [(ngModel)]="updateForm.dept" placeholder="Department" />
+      <select [(ngModel)]="updateForm.departmentId">
+        <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option>
+      </select>
     </div>
     <div class="form-row">
       <button class="primary-button" (click)="submitUpdate()">Update</button>
@@ -43,15 +50,10 @@
     </div>
   </div>
 
-  <!-- Table -->
   <table *ngIf="showTable && teachers.length > 0">
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Department</th>
-        <th *ngIf="isAdmin()">Actions</th>
+        <th>ID</th><th>Name</th><th>Email</th><th>Department</th><th *ngIf="isAdmin()">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -59,7 +61,7 @@
         <td>{{ t.id }}</td>
         <td>{{ t.name }}</td>
         <td>{{ t.email }}</td>
-        <td>{{ t.dept }}</td>
+        <td>{{ t.departmentName }}</td>
         <td *ngIf="isAdmin()">
           <div class="row-actions">
             <button class="primary-button" (click)="prepareUpdate(t)">Update</button>
@@ -70,16 +72,11 @@
     </tbody>
   </table>
 
-  <!-- No teachers -->
-  <div *ngIf="showTable && teachers.length === 0" class="message-box">
-    No teachers found.
-  </div>
+  <div *ngIf="showTable && teachers.length === 0" class="message-box">No teachers found.</div>
 
-  <!-- Message -->
-  <div *ngIf="message" class="message-box" [ngClass]="{
-    'success': !message.toLowerCase().includes('error'),
-    'error': message.toLowerCase().includes('error')
-  }">
-    {{ message }}
+  <div class="pagination-controls" *ngIf="totalPages > 1">
+    <button (click)="previousPage()" [disabled]="currentPage === 0">Previous</button>
+    <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage + 1 >= totalPages">Next</button>
   </div>
 </div>

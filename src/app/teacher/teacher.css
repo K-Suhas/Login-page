@@ -92,6 +92,7 @@ input {
   background-color: #dc2626;
 }
 
+/* Table */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -99,7 +100,7 @@ table {
   background: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 th {
@@ -116,7 +117,39 @@ td {
 
 tr:hover {
   background-color: #e3f2fd;
+  transition: background-color 0.3s ease;
 }
+
+/* Pagination */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pagination-controls button {
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 4px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.pagination-controls button:hover {
+  background-color: #2980b9;
+}
+
+.pagination-controls span {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+
 
 .message-box {
   margin-top: 15px;
@@ -139,4 +172,11 @@ tr:hover {
 .row-actions {
   display: flex;
   gap: 10px;
+}
+pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
 }

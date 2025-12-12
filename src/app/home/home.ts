@@ -16,6 +16,8 @@ export class HomeComponent {
 
   goToStudentInfo() { this.router.navigate(['/students']); }
   goToCourses() { this.router.navigate(['/course']); }
+  goToMarksheet() { this.router.navigate(['/marksheet']); }
+  goToTeacherManagement() { this.router.navigate(['/teacher']); }
 
   get isAdmin(): boolean { return this.auth.getRole() === 'ADMIN'; }
   get isTeacher(): boolean { return this.auth.getRole() === 'TEACHER'; }
