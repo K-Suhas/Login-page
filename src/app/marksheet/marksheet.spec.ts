@@ -1,16 +1,15 @@
+// src/app/marksheet/marksheet.spec.ts
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MarksheetComponent } from './marksheet';  // <-- matches your filename marksheet.ts
 
-import { MarksheetComponent } from './marksheet';
-
-describe('Marksheet', () => {
+describe('MarksheetComponent', () => {
   let component: MarksheetComponent;
   let fixture: ComponentFixture<MarksheetComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MarksheetComponent]
-    })
-    .compileComponents();
+      imports: [MarksheetComponent]   // standalone component goes in imports
+    }).compileComponents();
 
     fixture = TestBed.createComponent(MarksheetComponent);
     component = fixture.componentInstance;

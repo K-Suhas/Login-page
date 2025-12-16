@@ -1,9 +1,11 @@
+// src/app/Service/MarksheetService.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './AuthService';
 
 export interface MarksDTO {
+  subjectId: number | null;
   subjectName: string;
   marksObtained: number;
 }
@@ -40,7 +42,7 @@ export interface Page<T> {
 }
 
 export interface StudentInfo {
-  id: number;
+  studentId: number;
   name: string;
 }
 
@@ -49,61 +51,87 @@ export interface PercentageGroup {
   students: StudentInfo[];
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class MarksheetService {
   private baseUrl = 'http://localhost:8080/marks';
+  private subjectBaseUrl = 'http://localhost:8080/subject';
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
-  private getAuthHeaders(): HttpHeaders {
-    return new HttpHeaders({
-      Authorization: `Bearer ${this.auth.getIdToken()}`
-    });
+  private headers(): HttpHeaders {
+    return new HttpHeaders({ Authorization: `Bearer ${this.auth.getIdToken() || ''}` });
+  }
+
+  getSubjectsForStudent(studentId: number, semester: number): Observable<{ id: number; name: string; semester: number }[]> {
+    return this.http.get<{ id: number; name: string; semester: number }[]>(
+      `${this.subjectBaseUrl}/for-student/${studentId}?semester=${semester}`,
+      { headers: this.headers() }
+    );
   }
 
   submitMarks(payload: MarksEntryRequest): Observable<string> {
+    const email = this.auth.getEmail() || '';
+    const params = new HttpParams().set('email', email);
     return this.http.post(`${this.baseUrl}/bulk`, payload, {
-      headers: this.getAuthHeaders(),
+      headers: this.headers(),
+      params,
       responseType: 'text'
     });
   }
 
   getMarksheetSummary(studentId: number, semester: number, page: number, size: number): Observable<MarksResponseDTO> {
+    const email = this.auth.getEmail() || '';
     return this.http.get<MarksResponseDTO>(
-      `${this.baseUrl}/marksheet/${studentId}?semester=${semester}&page=${page}&size=${size}`,
-      { headers: this.getAuthHeaders() }
+      `${this.baseUrl}/marksheet/${studentId}?semester=${semester}&page=${page}&size=${size}&email=${encodeURIComponent(email)}`,
+      { headers: this.headers() }
     );
   }
 
-  updateMarks(studentId: number, semester: number, subjectName: string, newMarks: number): Observable<string> {
+
+  updateMarks(studentId: number, semester: number, subjectId: number, newMarks: number): Observable<string> {
+    const email = this.auth.getEmail() || '';
+    const params = new HttpParams()
+      .set('studentId', studentId)
+      .set('semester', semester)
+      .set('subjectId', subjectId)
+      .set('newMarks', newMarks)
+      .set('email', email);
+
     return this.http.put(`${this.baseUrl}/update`, null, {
-      headers: this.getAuthHeaders(),
-      params: { studentId, semester, subjectName, newMarks },
+      headers: this.headers(),
+      params,
       responseType: 'text'
     });
   }
+  
 
   deleteAllMarks(studentId: number, semester: number): Observable<string> {
+    const email = this.auth.getEmail() || '';
+    const params = new HttpParams()
+      .set('studentId', studentId)
+      .set('semester', semester)
+      .set('email', email);
+
     return this.http.delete(`${this.baseUrl}/deleteAll`, {
-      headers: this.getAuthHeaders(),
-      params: { studentId, semester },
+      headers: this.headers(),
+      params,
       responseType: 'text'
     });
   }
 
   getPaginatedStudentSummary(page: number, size: number): Observable<Page<StudentMarksSummaryDTO>> {
-    return this.http.get<Page<StudentMarksSummaryDTO>>(
-      `${this.baseUrl}/summary?page=${page}&size=${size}`,
-      { headers: this.getAuthHeaders() }
-    );
-  }
+  const email = this.auth.getEmail() || '';
+  return this.http.get<Page<StudentMarksSummaryDTO>>(
+    `${this.baseUrl}/summary?page=${page}&size=${size}&email=${encodeURIComponent(email)}`,
+    { headers: this.headers() }
+  );
+}
+
 
   getPercentageDistribution(): Observable<{ [range: string]: PercentageGroup }> {
     return this.http.get<{ [range: string]: PercentageGroup }>(
       `${this.baseUrl}/distribution`,
-      { headers: this.getAuthHeaders() }
+      { headers: this.headers() }
     );
   }
 }

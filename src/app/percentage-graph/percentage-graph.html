@@ -1,5 +1,5 @@
+<!-- src/app/percentage-graph/percentage-graph.html -->
 <div class="graph-container">
- <div class="graph-container">
   <canvas baseChart
     [data]="chartData"
     [options]="chartOptions"
@@ -10,12 +10,11 @@
   </canvas>
 </div>
 
-</div>
 <div *ngIf="selectedStudents.length" class="student-toggle-box">
   <h3>Students in selected range:</h3>
   <ul>
     <li *ngFor="let s of selectedStudents">
-      <strong>{{ s.id }}</strong> - {{ s.name }}
+      <strong>{{ s.studentId }}</strong> - {{ s.name }}
     </li>
   </ul>
 </div>

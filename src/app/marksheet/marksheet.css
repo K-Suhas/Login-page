@@ -1,6 +1,6 @@
+/* Container */
 .container {
   width: 100%;
-  max-width: full;
   margin: auto;
   padding: 30px;
   background: #ffffff;
@@ -15,6 +15,7 @@ h2 {
   margin-bottom: 20px;
 }
 
+/* Forms */
 .form-group {
   background: #f8f9fa;
   padding: 20px;
@@ -36,6 +37,7 @@ input {
   font-size: 14px;
 }
 
+/* Base table */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -46,15 +48,35 @@ th {
   background-color: #34495e;
   color: white;
   padding: 10px;
+  text-align: center;
 }
 
 td {
   padding: 10px;
   border-bottom: 1px solid #ddd;
+  text-align: center;
 }
-/* src/app/marksheet/marksheet.css */
 
-/* Table styling for individual report */
+/* Centered table (used everywhere for consistency) */
+.centered-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.centered-table th,
+.centered-table td {
+  border: 1px solid #ccc;
+  padding: 10px 20px;
+  text-align: center;
+}
+
+.centered-table th {
+  background-color: #34495e;
+  color: #fff;
+}
+
+/* Individual report table (if you ever want left-align names) */
 .subject-table {
   width: 100%;
   border-collapse: collapse;
@@ -64,28 +86,14 @@ td {
 .subject-table td {
   border: 1px solid #ccc;
   padding: 8px;
-  text-align: left; /* ✅ ensures left alignment */
+  text-align: left;
 }
 
 .left-cell {
   text-align: left;
 }
 
-/* Optional: style buttons for individual report controls */
-.individual-controls {
-  margin-top: 10px;
-}
-
-.individual-controls .primary-button {
-  margin-right: 8px;
-}
-
-.unified-buttons {
-  display: flex;
-  justify-content: center;
-  margin-top: 15px;
-}
-
+/* Buttons */
 button {
   padding: 8px 16px;
   margin: 5px;
@@ -104,24 +112,6 @@ button {
   color: white;
 }
 
-.pagination-controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.message-box.success {
-  background-color: #e0f7e9;
-  color: #2e7d32;
-  padding: 10px;
-  border-radius: 5px;
-  text-align: center;
-}
-.center-cell {
-  text-align: center;
-}
-
 .update-button {
   background-color: #10b981;
   color: white;
@@ -135,13 +125,9 @@ button {
 .update-button:hover {
   background-color: #059669;
 }
-.delete-section {
-  margin-top: 20px;
-  text-align: center;
-}
 
 .delete-all-button {
-  background-color: #ef4444; /* Red */
+  background-color: #ef4444;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -152,16 +138,67 @@ button {
 }
 
 .delete-all-button:hover {
-  background-color: #dc2626; /* Darker red on hover */
+  background-color: #dc2626;
 }
+
+/* Layout helpers */
+.unified-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.message-box.success {
+  background-color: #e0f7e9;
+  color: #2e7d32;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  margin-top: 15px;
+}
+
+.center-cell {
+  text-align: center;
+}
+
 .marks-cell {
   text-align: center;
 }
 
-.centered-table th,
-.centered-table td {
-  padding: 10px 20px;
-  border: 1px solid #ccc;
+/* Delete container */
+.delete-section {
+  margin-top: 20px;
   text-align: center;
 }
 
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* src/app/marksheet/marksheet.css */
+.message-box {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.message-box.success {
+  background: #e6ffed;
+  color: #03662c;
+  border: 1px solid #90d7a3;
+}
+
+.message-box.error {
+  background: #ffe6e6;
+  color: #8b0000;
+  border: 1px solid #f5a3a3;
+}
