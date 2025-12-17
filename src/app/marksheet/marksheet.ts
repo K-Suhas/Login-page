@@ -40,6 +40,7 @@ export class MarksheetComponent implements OnInit {
   summaryTotalPages = 0;
   departments: { id: number; name: string }[] = [];
   semesters: number[] = [1,2,3,4,5,6,7,8];
+  fixedDepartmentName: string = '';
 
 
   message = '';
@@ -72,6 +73,20 @@ export class MarksheetComponent implements OnInit {
       semester: [1, [Validators.required, Validators.min(1), Validators.max(8)]]
     });
     this.loadDepartments();
+    const role = this.auth.getRole();
+    const deptId = this.auth.getDepartmentId();
+    const deptName = this.auth.getDepartmentName();
+
+if (role === 'TEACHER' || role === 'STUDENT') {
+  if (deptId !== null) {
+    this.viewSubjectsForm.patchValue({ departmentId: Number(deptId) });
+    this.fixedDepartmentName = deptName || '';
+  } else {
+    console.error('DepartmentId missing for user role:', role);
+  }
+}
+
+
   }
 
   get subjectsArray(): FormArray {
@@ -166,56 +181,116 @@ export class MarksheetComponent implements OnInit {
 
   // Marks workflow
   loadMarksTable(): void {
-    const studentId = this.marksForm.get('studentId')?.value;
-    const semester = this.marksForm.get('semester')?.value;
-    if (!studentId || !semester) { this.setMessage('Enter student ID and semester', true); return; }
+  const studentId = this.marksForm.get('studentId')?.value;
+  const semester = this.marksForm.get('semester')?.value;
 
-    this.service.getSubjectsForStudent(studentId, semester).subscribe({
-      next: list => {
-        const fa = this.fb.array(list.map(s => this.buildSubjectRow({ id: s.id, name: s.name })));
-        this.marksForm.setControl('subjects', fa);
-        if (!list.length) {
-          this.setMessage(`No subjects configured for this department in semester ${semester}`, true);
-        } else {
-          this.setMessage('Subjects loaded for marks entry');
+  // ✅ Clear subjects table before each load
+  this.subjectsArray.clear();
+
+  if (!studentId || !semester) {
+    this.setMessage('Enter student ID and semester', true);
+    return;
+  }
+
+  const role = this.auth.getRole();
+  const user = this.auth.getUser();
+
+  if (role === 'TEACHER') {
+    this.service.getStudentDepartment(studentId).subscribe({
+      next: dept => {
+        if (Number(dept.id) !== Number(user?.departmentId)) {
+          this.setMessage('Not allowed to add marks for student of another department', true);
+          // ✅ Hide table on error
+          this.subjectsArray.clear();
+          return;
         }
+        this.loadSubjectsForMarks(studentId, semester);
       },
       error: err => {
-        const msg = err.error?.message || 'Failed to load subjects';
-        this.setMessage(msg, true);
+        if (err.status === 404) {
+          this.setMessage(`No student found with id ${studentId}`, true);
+        } else {
+          this.setMessage(err.error?.message || 'Failed to validate student department', true);
+        }
+        // ✅ Hide table on error
         this.subjectsArray.clear();
       }
     });
+  } else {
+    this.loadSubjectsForMarks(studentId, semester);
   }
+}
+
+
+
+
+/** Helper to actually load subjects */
+private loadSubjectsForMarks(studentId: number, semester: number): void {
+  // ✅ Clear before loading
+  this.subjectsArray.clear();
+
+  this.service.getSubjectsForStudent(studentId, semester).subscribe({
+    next: list => {
+      if (list.length) {
+        const fa = this.fb.array(list.map(s => this.buildSubjectRow({ id: s.id, name: s.name })));
+        this.marksForm.setControl('subjects', fa);
+        this.setMessage('Subjects loaded for marks entry', false);
+      } else {
+        this.setMessage('No subjects found', true);
+        // ✅ Hide table if no subjects
+        this.subjectsArray.clear();
+      }
+    },
+    error: err => {
+      this.setMessage(err.error?.message || 'Failed to load subjects', true);
+      // ✅ Hide table on error
+      this.subjectsArray.clear();
+    }
+  });
+}
+
+
+
 
   submitMarks(): void {
-    if (!this.canEditMarks()) { this.setMessage('Not authorized', true); return; }
-    if (this.marksForm.invalid || this.subjectsArray.length === 0) {
-      this.setMessage('Enter student, semester, and marks', true); return;
-    }
-
-    const payload: MarksEntryRequest = {
-      studentId: this.marksForm.get('studentId')?.value,
-      semester: this.marksForm.get('semester')?.value,
-      subjects: (this.subjectsArray.value as MarksDTO[]).map(s => ({
-        subjectId: s.subjectId,
-        subjectName: s.subjectName,
-        marksObtained: s.marksObtained
-      }))
-    };
-
-    this.service.submitMarks(payload).subscribe({
-      next: () => this.setMessage('Marks saved successfully'),
-      error: err => {
-        if (err.status === 409) {
-          this.setMessage('Marks already entered for this student in this semester', true);
-        } else {
-          const msg = err.error?.message || 'Failed to save marks';
-          this.setMessage(msg, true);
-        }
-      }
-    });
+  if (!this.canEditMarks()) { 
+    this.setMessage('Not authorized', true); 
+    return; 
   }
+  if (this.marksForm.invalid || this.subjectsArray.length === 0) {
+    this.setMessage('Enter student, semester, and marks', true); 
+    return;
+  }
+
+  const payload: MarksEntryRequest = {
+    studentId: this.marksForm.get('studentId')?.value,
+    semester: this.marksForm.get('semester')?.value,
+    subjects: (this.subjectsArray.value as MarksDTO[]).map(s => ({
+      subjectId: s.subjectId,
+      subjectName: s.subjectName,
+      marksObtained: s.marksObtained
+    }))
+  };
+
+  this.service.submitMarks(payload).subscribe({
+    next: () => {
+      this.setMessage('Marks saved successfully', false);
+      // ✅ Hide subjects table after successful submit
+      this.subjectsArray.clear();
+    },
+    error: err => {
+      if (err.status === 409) {
+        this.setMessage('Marks already entered for this student in this semester', true);
+      } else {
+        const msg = err.error?.message || 'Failed to save marks';
+        this.setMessage(msg, true);
+      }
+      // ✅ Hide subjects table on error
+      this.subjectsArray.clear();
+    }
+  });
+}
+
 
   updateSubjectMarks(subjectId: number | null, subjectName: string): void {
     if (!subjectId) { this.setMessage('Subject ID missing', true); return; }
@@ -254,6 +329,12 @@ export class MarksheetComponent implements OnInit {
   const role = this.auth.getRole();
   const user = this.auth.getUser();
 
+  // ✅ Hide the search form once search is triggered
+  this.showSearchForm = false;
+
+  // Reset summary before search
+  this.summary = null;
+
   // For students: if they didn’t type anything, default to their own ID
   if (role === 'STUDENT' && !this.searchStudentId) {
     this.searchStudentId = user?.id;
@@ -267,7 +348,7 @@ export class MarksheetComponent implements OnInit {
   this.service.getMarksheetSummary(this.searchStudentId, this.searchSemester, this.page, this.size).subscribe({
     next: res => {
       this.summary = res;
-      this.setMessage('Marksheet loaded');
+      this.setMessage('Marksheet loaded', false);
     },
     error: err => {
       if (err.status === 404) {
@@ -280,6 +361,8 @@ export class MarksheetComponent implements OnInit {
     }
   });
 }
+
+
 
   nextPage(): void {
     if (this.summary && this.page < this.summary.totalPages - 1) {
@@ -370,6 +453,9 @@ toggleSearchForm(): void {
       this.individualReport = undefined;
     }
   });
+}
+clearSummary(): void {
+  this.summary = null;
 }
 
 

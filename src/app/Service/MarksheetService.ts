@@ -55,6 +55,7 @@ export interface PercentageGroup {
 export class MarksheetService {
   private baseUrl = 'http://localhost:8080/marks';
   private subjectBaseUrl = 'http://localhost:8080/subject';
+  private studentBaseUrl = 'http://localhost:8080/student';
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
@@ -126,6 +127,13 @@ export class MarksheetService {
     { headers: this.headers() }
   );
 }
+
+ getStudentDepartment(studentId: number): Observable<{ id: number; name: string }> {
+    return this.http.get<{ id: number; name: string }>(
+      `${this.studentBaseUrl}/${studentId}/department`,
+      { headers: this.headers() }
+    );
+ }
 
 
   getPercentageDistribution(): Observable<{ [range: string]: PercentageGroup }> {

@@ -3,14 +3,24 @@
 
   <!-- Action toolbar -->
   <div class="action-toolbar">
-    <button *ngIf="auth.getRole() === 'ADMIN'" class="primary-button" (click)="toggleSubjectForm()">➕ Add Subject</button>
-    <button *ngIf="auth.getRole() === 'ADMIN'" class="primary-button" (click)="toggleViewSubjectsForm()">📖 View Subjects</button>
-    <button *ngIf="auth.getRole() === 'ADMIN' || auth.getRole() === 'TEACHER'" class="primary-button" (click)="toggleMarksForm()">✏️ Add Marks</button>
-    <button class="primary-button" (click)="toggleSearchForm()">🔍 Search Marksheet</button>
-  </div>
+  <!-- View Subjects: visible to all -->
+  <button *ngIf="auth.getRole() === 'ADMIN' || auth.getRole() === 'TEACHER' || auth.getRole() === 'STUDENT'"
+          class="primary-button" (click)="toggleViewSubjectsForm()">📖 View Subjects</button>
+
+  <!-- Add Marks: visible to Admin + Teacher -->
+  <button *ngIf="auth.getRole() === 'ADMIN' || auth.getRole() === 'TEACHER'"
+          class="primary-button" (click)="toggleMarksForm()">✏️ Add Marks</button>
+
+  <!-- Add Subject: Admin only -->
+  <button *ngIf="auth.getRole() === 'ADMIN'" class="primary-button" (click)="toggleSubjectForm()">➕ Add Subject</button>
+
+  <!-- Search Marksheet: visible to all -->
+  <button class="primary-button" (click)="toggleSearchForm()">🔍 Search Marksheet</button>
+</div>
+
 
   <!-- Search Marksheet -->
-  <div *ngIf="auth.getRole() === 'STUDENT' || showSearchForm" class="modal">
+  <div *ngIf=" showSearchForm" class="modal">
     <h3>Search Marksheet</h3>
     <div class="form-row">
       <label>Student ID:</label>
@@ -60,19 +70,23 @@
   </form>
 </div>
 
-
   <!-- View Subjects Modal -->
-  <div *ngIf="showViewSubjectsForm" class="modal">
+<div *ngIf="showViewSubjectsForm" class="modal">
   <h3>View Subjects</h3>
   <form [formGroup]="viewSubjectsForm" (ngSubmit)="viewSubjects()">
     <div class="form-row">
       <label>Department:</label>
-      <select formControlName="departmentId">
-        <option [ngValue]="null">-- Select Department --</option>
-        <option *ngFor="let dept of departments" [ngValue]="dept.id">
-          {{ dept.name }}
-        </option>
-      </select>
+      <!-- Admin: editable dropdown -->
+  <select *ngIf="auth.getRole() === 'ADMIN'" formControlName="departmentId">
+    <option [ngValue]="null">-- Select Department --</option>
+    <option *ngFor="let dept of departments" [ngValue]="dept.id">{{ dept.name }}</option>
+  </select>
+
+  <!-- Teacher/Student: fixed department name, not editable -->
+  <input *ngIf="auth.getRole() !== 'ADMIN'" type="text" [value]="fixedDepartmentName" readonly />
+  <!-- Hidden field to keep departmentId in form -->
+  <input *ngIf="auth.getRole() !== 'ADMIN'" type="hidden" formControlName="departmentId" />
+
     </div>
 
     <div class="form-row">
@@ -87,35 +101,30 @@
       <button type="button" class="secondary-button" (click)="toggleViewSubjectsForm()">Close</button>
     </div>
   </form>
+
+  <!-- Subjects Table -->
   <table *ngIf="subjectsList.length > 0" class="centered-table">
-  <thead>
-    <tr>
-      <th>Subject</th>
-      <th>Semester</th>
-      <th>Department</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let s of subjectsList">
-      <td>{{ s.name }}</td>
-      <td>{{ s.semester }}</td>
-      <td>{{ s.departmentName || s.departmentId }}</td>
-      <td>
-        <button class="update-button" (click)="updateSubject(s)">Update</button>
-        <button class="delete-all-button" (click)="deleteSubject(s.id ?? 0)">Delete</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- Optional: show message if no subjects -->
-<div *ngIf="subjectsList.length === 0 && message" class="message-box error">
-  {{ message }}
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Semester</th>
+        <th>Department</th>
+        <th *ngIf="auth.getRole() === 'ADMIN'">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of subjectsList">
+        <td>{{ s.name }}</td>
+        <td>{{ s.semester }}</td>
+        <td>{{ s.departmentName }}</td>
+        <td *ngIf="auth.getRole() === 'ADMIN'">
+          <button class="update-button" (click)="updateSubject(s)">Update</button>
+          <button class="delete-all-button" (click)="deleteSubject(s.id ?? 0)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
-
-</div>
-
 
   <!-- Add Marks Modal -->
   <div *ngIf="showMarksForm" class="modal">
@@ -176,6 +185,9 @@
     <div class="delete-section" *ngIf="canEditMarks()">
       <button class="delete-all-button" (click)="deleteAllMarks()">Delete All Marks</button>
     </div>
+    <div class="unified-buttons">
+    <button class="secondary-button" (click)="clearSummary()">Close Summary</button>
+  </div>
   </div>
 
   <!-- Individual Report -->

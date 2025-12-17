@@ -11,9 +11,18 @@ export class AuthService {
   }
 
   setUser(user: any) {
-    this.user = user;
-    localStorage.setItem('user', JSON.stringify(user));
+  // If backend sends nested department object, flatten it
+  if (user?.department) {
+    user.departmentId = user.department.id;
+    user.departmentName = user.department.name;
   }
+  this.user = user;
+  localStorage.setItem('user', JSON.stringify(this.user));
+}
+
+
+
+
 
   getUser() {
     return this.user;
