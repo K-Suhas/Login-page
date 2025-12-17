@@ -25,4 +25,25 @@ export class DepartmentService {
       headers: this.getAuthHeaders()
     });
   }
+  addDepartment(dept: { name: string }): Observable<string> {
+  return this.http.post('http://localhost:8080/departments', dept, {
+    headers: this.getAuthHeaders(),
+    responseType: 'text'
+  });
+}
+updateDepartment(dept: DepartmentDTO): Observable<string> {
+  return this.http.put(`${this.baseUrl}/${dept.id}`, dept, {
+    headers: this.getAuthHeaders(),
+    responseType: 'text'
+  });
+}
+
+deleteDepartment(id: number): Observable<string> {
+  return this.http.delete(`${this.baseUrl}/${id}`, {
+    headers: this.getAuthHeaders(),
+    responseType: 'text'
+  });
+}
+
+
 }

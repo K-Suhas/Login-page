@@ -17,6 +17,8 @@
     <button class="sidebar-button" (click)="goToCourses()">Courses</button>
     <button class="sidebar-button" (click)="goToMarksheet()">Marksheet</button>
     <button class="sidebar-button" (click)="goToTeacherManagement()">Teachers</button>
+    <button class="sidebar-button" (click)="goToDepartment()">Departments</button>
+
   </div>
 
   <!-- Add Admin button -->
@@ -43,6 +45,9 @@
     </form>
     <div class="admin-status" [class.error]="adminMessage.startsWith('❌')">{{ adminMessage }}</div>
   </div>
+
+
+  
   <!-- Report button -->
   <div class="unified-buttons">
     <button class="report-button" (click)="generateReport()">📊 Generate Student Report</button>
@@ -70,7 +75,7 @@
           <tr *ngFor="let s of paginatedStudents">
             <td>{{ s.id }}</td>
             <td>{{ s.name }}</td>
-            <td>{{ s.dept }}</td>
+            <td>{{ s.departmentName }}</td>
             <td>{{ s.email }}</td>
           </tr>
         </tbody>

@@ -41,5 +41,12 @@ export const routes: Routes = [
     path: 'teacher',
     loadComponent: () =>
       import('./teacher/teacher').then(m => m.TeacherComponent)
-  }
+  },
+  {
+  path: 'department',
+  loadComponent: () =>
+    import('./department/department').then(m => m.DepartmentComponent),
+  canActivate: [adminGuard]
+}
+
 ];

@@ -1,65 +1,126 @@
-<!-- src/app/marksheet/marksheet.html -->
 <div class="container">
-  <h2>Marksheet Entry</h2>
+  <h2>Marksheet Management</h2>
 
-  <!-- Admin-only subject management -->
-  <div *ngIf="auth.getRole() === 'ADMIN'" class="subject-admin-box">
-    <button class="primary-button" (click)="toggleSubjectForm()">Add Subject</button>
-    <form *ngIf="showSubjectForm" [formGroup]="subjectForm" (ngSubmit)="createSubject()" class="form-group">
-      <div class="form-row">
-        <label>Department ID:</label>
-        <input type="number" formControlName="departmentId" />
-        <label>Semester:</label>
-        <input type="number" formControlName="semester" />
-        <label>Subject name:</label>
-        <input type="text" formControlName="name" />
-      </div>
-      <div class="unified-buttons">
-        <button type="submit" class="primary-button">Submit</button>
-      </div>
-    </form>
-
-    <button class="primary-button" (click)="toggleViewSubjectsForm()">View Subjects</button>
-    <form *ngIf="showViewSubjectsForm" [formGroup]="viewSubjectsForm" (ngSubmit)="viewSubjects()" class="form-group">
-      <div class="form-row">
-        <label>Department ID:</label>
-        <input type="number" formControlName="departmentId" />
-        <label>Semester:</label>
-        <input type="number" formControlName="semester" />
-      </div>
-      <div class="unified-buttons">
-        <button type="submit" class="primary-button">Load Subjects</button>
-      </div>
-    </form>
-
-    <table *ngIf="subjectsList.length" class="centered-table">
-      <thead>
-        <tr>
-          <th>Subject</th>
-          <th>Semester</th>
-          <th>Department</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let s of subjectsList">
-          <td>{{ s.name }}</td>
-          <td>{{ s.semester }}</td>
-          <td>{{ s.departmentName || s.departmentId }}</td>
-          <td>
-            <button class="update-button" (click)="updateSubject(s)">Save</button>
-            <button class="delete-all-button" (click)="deleteSubject(s.id ?? 0)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Action toolbar -->
+  <div class="action-toolbar">
+    <button *ngIf="auth.getRole() === 'ADMIN'" class="primary-button" (click)="toggleSubjectForm()">➕ Add Subject</button>
+    <button *ngIf="auth.getRole() === 'ADMIN'" class="primary-button" (click)="toggleViewSubjectsForm()">📖 View Subjects</button>
+    <button *ngIf="auth.getRole() === 'ADMIN' || auth.getRole() === 'TEACHER'" class="primary-button" (click)="toggleMarksForm()">✏️ Add Marks</button>
+    <button class="primary-button" (click)="toggleSearchForm()">🔍 Search Marksheet</button>
   </div>
 
-  <!-- Marks entry -->
-  <div *ngIf="canEditMarks()" class="marks-entry">
-    <button class="primary-button" (click)="toggleMarksForm()">Add Marks</button>
+  <!-- Search Marksheet -->
+  <div *ngIf="auth.getRole() === 'STUDENT' || showSearchForm" class="modal">
+    <h3>Search Marksheet</h3>
+    <div class="form-row">
+      <label>Student ID:</label>
+      <input [(ngModel)]="searchStudentId" type="number" />
+      <label>Semester:</label>
+      <input [(ngModel)]="searchSemester" type="number" min="1" max="8" />
+    </div>
+    <div class="unified-buttons">
+      <button (click)="searchMarksheet()" class="primary-button">Search</button>
+    </div>
+    <div class="unified-buttons" *ngIf="auth.getRole() !== 'STUDENT'">
+      <button class="primary-button" (click)="loadIndividualReport()">View Individual Report</button>
+      <button class="primary-button" (click)="downloadIndividualCsv()">Download Report</button>
+    </div>
+  </div>
 
-    <form *ngIf="showMarksForm" [formGroup]="marksForm" (ngSubmit)="loadMarksTable()" class="form-group">
+  <!-- Add Subject Modal -->
+  <div *ngIf="showSubjectForm" class="modal">
+  <h3>Add Subject</h3>
+  <form [formGroup]="subjectForm" (ngSubmit)="createSubject()">
+    <div class="form-row">
+      <label>Department:</label>
+      <select formControlName="departmentId">
+        <option [ngValue]="null">-- Select Department --</option>
+        <option *ngFor="let dept of departments" [ngValue]="dept.id">
+          {{ dept.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label>Semester:</label>
+      <select formControlName="semester">
+        <option *ngFor="let sem of semesters" [ngValue]="sem">{{ sem }}</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label>Subject name:</label>
+      <input type="text" formControlName="name" />
+    </div>
+
+    <div class="unified-buttons">
+      <button type="submit" class="primary-button">Submit</button>
+      <button type="button" class="secondary-button" (click)="toggleSubjectForm()">Cancel</button>
+    </div>
+  </form>
+</div>
+
+
+  <!-- View Subjects Modal -->
+  <div *ngIf="showViewSubjectsForm" class="modal">
+  <h3>View Subjects</h3>
+  <form [formGroup]="viewSubjectsForm" (ngSubmit)="viewSubjects()">
+    <div class="form-row">
+      <label>Department:</label>
+      <select formControlName="departmentId">
+        <option [ngValue]="null">-- Select Department --</option>
+        <option *ngFor="let dept of departments" [ngValue]="dept.id">
+          {{ dept.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label>Semester:</label>
+      <select formControlName="semester">
+        <option *ngFor="let sem of semesters" [ngValue]="sem">{{ sem }}</option>
+      </select>
+    </div>
+
+    <div class="unified-buttons">
+      <button type="submit" class="primary-button">Load Subjects</button>
+      <button type="button" class="secondary-button" (click)="toggleViewSubjectsForm()">Close</button>
+    </div>
+  </form>
+  <table *ngIf="subjectsList.length > 0" class="centered-table">
+  <thead>
+    <tr>
+      <th>Subject</th>
+      <th>Semester</th>
+      <th>Department</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let s of subjectsList">
+      <td>{{ s.name }}</td>
+      <td>{{ s.semester }}</td>
+      <td>{{ s.departmentName || s.departmentId }}</td>
+      <td>
+        <button class="update-button" (click)="updateSubject(s)">Update</button>
+        <button class="delete-all-button" (click)="deleteSubject(s.id ?? 0)">Delete</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Optional: show message if no subjects -->
+<div *ngIf="subjectsList.length === 0 && message" class="message-box error">
+  {{ message }}
+</div>
+
+</div>
+
+
+  <!-- Add Marks Modal -->
+  <div *ngIf="showMarksForm" class="modal">
+    <h3>Add Marks</h3>
+    <form [formGroup]="marksForm" (ngSubmit)="loadMarksTable()">
       <div class="form-row">
         <label>Student ID:</label>
         <input formControlName="studentId" type="number" />
@@ -67,14 +128,12 @@
         <input formControlName="semester" type="number" min="1" max="8" />
       </div>
       <div class="unified-buttons">
-        <button type="submit" class="primary-button">Load Subjects for Marks</button>
+        <button type="submit" class="primary-button">Load Subjects</button>
       </div>
 
       <div formArrayName="subjects">
         <table *ngIf="subjectsArray.controls.length" class="centered-table">
-          <thead>
-            <tr><th>Subject</th><th>Marks</th></tr>
-          </thead>
+          <thead><tr><th>Subject</th><th>Marks</th></tr></thead>
           <tbody>
             <tr *ngFor="let group of subjectsArray.controls; let i = index" [formGroupName]="i">
               <td>{{ group.get('subjectName')?.value }}</td>
@@ -90,97 +149,60 @@
     </form>
   </div>
 
-  <!-- Search Marksheet -->
-  <div class="search-section">
-  <h3>Search Marksheet</h3>
-
-  <label>Student ID:</label>
-  <input [(ngModel)]="searchStudentId" type="number" />
-
-  <label>Semester:</label>
-  <input [(ngModel)]="searchSemester" type="number" min="1" max="8" />
-
-  <button (click)="searchMarksheet()" class="primary-button">Search</button>
-
-  <!-- Individual report controls only for Admin/Teacher -->
-  <div class="individual-controls" *ngIf="auth.getRole() === 'ADMIN' || auth.getRole() === 'TEACHER'">
-    <button class="primary-button" (click)="loadIndividualReport()">View Individual Report</button>
-    <button class="primary-button" (click)="downloadIndividualCsv()">Download Individual Report</button>
-  </div>
-</div>
-
-
   <!-- Marksheet Summary -->
-  <div *ngIf="summary" class="form-group">
+  <div *ngIf="summary" class="summary-section">
     <h3>Marksheet Summary</h3>
     <table class="centered-table">
       <thead>
-        <tr>
-          <th>Subject</th>
-          <th>Marks</th>
-          <th *ngIf="canEditMarks()">Actions</th>
-        </tr>
+        <tr><th>Subject</th><th>Marks</th><th *ngIf="canEditMarks()">Actions</th></tr>
       </thead>
       <tbody>
         <tr *ngFor="let s of summary.subjects">
           <td>{{ s.subjectName }}</td>
-          <td class="marks-cell">{{ s.marksObtained }}</td>
-          <td class="center-cell" *ngIf="canEditMarks()">
+          <td>{{ s.marksObtained }}</td>
+          <td *ngIf="canEditMarks()">
             <button class="update-button" (click)="updateSubjectMarks(s.subjectId ?? null, s.subjectName)">Update</button>
           </td>
         </tr>
-
-        <tr class="summary-row">
-          <td><strong>Total</strong></td>
-          <td><strong>{{ summary.total }}</strong></td>
-          <td></td>
-        </tr>
-        <tr class="summary-row">
-          <td><strong>Percentage</strong></td>
-          <td><strong>{{ summary.percentage | number:'1.2-2' }}%</strong></td>
-          <td></td>
-        </tr>
+        <tr><td><strong>Total</strong></td><td><strong>{{ summary.total }}</strong></td><td></td></tr>
+        <tr><td><strong>Percentage</strong></td><td><strong>{{ summary.percentage | number:'1.2-2' }}%</strong></td><td></td></tr>
       </tbody>
     </table>
-
     <div class="pagination-controls">
       <button (click)="prevPage()" [disabled]="page === 0">Previous</button>
       <span>Page {{ page + 1 }} of {{ summary.totalPages }}</span>
       <button (click)="nextPage()" [disabled]="page >= summary.totalPages - 1">Next</button>
     </div>
-
-    <div class="delete-section" *ngIf="summary && canEditMarks()">
-      <button class="delete-all-button" (click)="deleteAllMarks()">Delete Marks</button>
+    <div class="delete-section" *ngIf="canEditMarks()">
+      <button class="delete-all-button" (click)="deleteAllMarks()">Delete All Marks</button>
     </div>
   </div>
-  <!-- Individual Student Report -->
-<div *ngIf="individualReport" class="form-group">
-  <h3>Individual Student Report</h3>
-  <p><strong>Student ID:</strong> {{ individualReport.id }}</p>
-  <p><strong>Name:</strong> {{ individualReport.name }}</p>
-  <p><strong>Department:</strong> {{ individualReport.departmentName }}</p>
-  <p><strong>Email:</strong> {{ individualReport.email }}</p>
-  <p><strong>Date of Birth:</strong> {{ individualReport.dob }}</p>
-  <p><strong>Courses:</strong> {{ individualReport.courseNames?.join(', ') }}</p>
-  <p><strong>Total Marks:</strong> {{ individualReport.totalMarks }}</p>
-  <p><strong>Percentage:</strong> {{ individualReport.percentage | number:'1.2-2' }}%</p>
 
-  <h4>Subjects</h4>
-  <table class="centered-table">
-    <thead>
-      <tr><th>Subject</th><th>Marks</th></tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let s of individualReport.subjects">
-        <td>{{ s.subjectName }}</td>
-        <td>{{ s.marksObtained }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+  <!-- Individual Report -->
+  <div *ngIf="individualReport" class="report-section">
+    <h3>Individual Student Report</h3>
+    <p><strong>ID:</strong> {{ individualReport.id }}</p>
+    <p><strong>Name:</strong> {{ individualReport.name }}</p>
+    <p><strong>Department:</strong> {{ individualReport.departmentName }}</p>
+    <p><strong>Email:</strong> {{ individualReport.email }}</p>
+    <p><strong>DOB:</strong> {{ individualReport.dob }}</p>
+    <p><strong>Courses:</strong> {{ individualReport.courseNames?.join(', ') }}</p>
+    <p><strong>Total Marks:</strong> {{ individualReport.totalMarks }}</p>
+    <p><strong>Percentage:</strong> {{ individualReport.percentage | number:'1.2-2' }}%</p>
 
+    <h4>Subjects</h4>
+    <table class="centered-table">
+      <thead><tr><th>Subject</th><th>Marks</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let s of individualReport.subjects">
+          <td>{{ s.subjectName }}</td>
+          <td>{{ s.marksObtained }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-  <!-- Message box -->
+  <!-- Message -->
   <div *ngIf="message" class="message-box" [class.error]="isError" [class.success]="!isError">
     {{ message }}
   </div>

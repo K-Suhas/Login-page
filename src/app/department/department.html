@@ -1,0 +1,92 @@
+<div class="container">
+  <h2>Department Management</h2>
+
+  <!-- Search and Clear -->
+  <div class="search-row">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name or ID" />
+    <button class="secondary-button" (click)="searchDepartments()">
+      <i class="fas fa-search"></i> Search
+    </button>
+    <button class="secondary-button" (click)="searchQuery=''; currentPage=0; getAllDepartments()">
+      <i class="fas fa-times"></i> Clear
+    </button>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-row unified-buttons">
+    <button class="primary-button large-button" (click)="toggleAddForm()">
+      <i class="fas fa-plus"></i> Add Department
+    </button>
+    <button class="primary-button large-button" (click)="getAllDepartments()">
+      <i class="fas fa-list"></i> Get All Departments
+    </button>
+  </div>
+
+  <!-- Add Form -->
+  <div *ngIf="showAddForm" class="form-group">
+    <h3>Add New Department</h3>
+    <div class="form-row">
+      <input type="text" [(ngModel)]="addForm.name" placeholder="Department Name" />
+    </div>
+    <div class="form-row">
+      <button class="primary-button" (click)="submitAdd()">Submit</button>
+      <button class="secondary-button" (click)="toggleAddForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Update Form -->
+  <div *ngIf="showUpdateForm" class="form-group">
+    <h3>Update Department</h3>
+    <div class="form-row">
+      <input type="text" [(ngModel)]="updateId" placeholder="Department ID (required)" />
+      <input type="text" [(ngModel)]="updateForm.name" placeholder="New Name" />
+    </div>
+    <div class="form-row">
+      <button class="primary-button" (click)="submitUpdate()">Update</button>
+      <button class="secondary-button" (click)="toggleUpdateForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <table *ngIf="filteredDepartments && filteredDepartments.length > 0">
+    <thead>
+      <tr>
+        <th><i class="fas fa-id-badge"></i> ID</th>
+        <th><i class="fas fa-building"></i> Name</th>
+        <th><i class="fas fa-cogs"></i> Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let dept of filteredDepartments">
+        <td>{{ dept.id }}</td>
+        <td>{{ dept.name }}</td>
+        <td>
+          <div class="row-actions">
+            <button class="danger-button" (click)="deleteDepartment(dept.id)">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+            <button class="primary-button" (click)="prepareUpdate(dept)">
+              <i class="fas fa-edit"></i> Update
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Pagination -->
+  <div class="pagination-controls" *ngIf="totalPages > 1">
+    <button (click)="previousPage()" [disabled]="currentPage === 0">Previous</button>
+    <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage + 1 >= totalPages">Next</button>
+  </div>
+
+  <!-- Message -->
+  <div *ngIf="message"
+       class="course-message-box"
+       [ngClass]="message.toLowerCase().includes('error') ? 'course-error' : 'course-success'">
+    <i class="fas"
+       [ngClass]="message.toLowerCase().includes('error') ? 'fa-exclamation-circle' : 'fa-check-circle'"></i>
+    {{ message }}
+  </div>
+</div>

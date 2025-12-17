@@ -8,6 +8,7 @@ import { MarksheetService, MarksEntryRequest, MarksResponseDTO, StudentMarksSumm
 import { AuthService } from '../Service/AuthService';
 import { StudentReportService, StudentMarksheetDTO } from '../Service/StudentReportService';
 import { SubjectService, SubjectDTO } from '../Service/SubjectService';
+import { DepartmentService, DepartmentDTO } from '../Service/DepartmentService';
 
 @Component({
   selector: 'app-marksheet',
@@ -37,6 +38,9 @@ export class MarksheetComponent implements OnInit {
   showStudentSummary = false;
   summaryPage = 0;
   summaryTotalPages = 0;
+  departments: { id: number; name: string }[] = [];
+  semesters: number[] = [1,2,3,4,5,6,7,8];
+
 
   message = '';
   isError = false;
@@ -46,7 +50,8 @@ export class MarksheetComponent implements OnInit {
     private service: MarksheetService,
     public auth: AuthService,
     private reportService: StudentReportService,
-    private subjectService: SubjectService
+    private subjectService: SubjectService,
+    private departmentService: DepartmentService
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +71,7 @@ export class MarksheetComponent implements OnInit {
       departmentId: [null, Validators.required],
       semester: [1, [Validators.required, Validators.min(1), Validators.max(8)]]
     });
+    this.loadDepartments();
   }
 
   get subjectsArray(): FormArray {
@@ -84,6 +90,13 @@ export class MarksheetComponent implements OnInit {
   toggleSubjectForm(): void { this.showSubjectForm = !this.showSubjectForm; }
   toggleViewSubjectsForm(): void { this.showViewSubjectsForm = !this.showViewSubjectsForm; if (!this.showViewSubjectsForm) this.subjectsList = []; }
   toggleMarksForm(): void { this.showMarksForm = !this.showMarksForm; if (!this.showMarksForm) this.subjectsArray.clear(); }
+  loadDepartments(): void {
+  this.departmentService.getAllDepartments().subscribe({
+  next: (data) => this.departments = data,
+  error: (err) => this.setMessage(err.error?.message || 'Failed to load departments', true)
+});
+
+}
 
   canEditMarks(): boolean {
     const role = this.auth.getRole();
@@ -299,11 +312,22 @@ export class MarksheetComponent implements OnInit {
     error: err => this.setMessage(err.error?.message || 'Failed to load summary', true)
   });
 }
+showSidebar = false;
+showSearchForm = false;
 
+toggleSidebar(): void {
+  this.showSidebar = !this.showSidebar;
+  if (!this.showSidebar) {
+    this.showSubjectForm = false;
+    this.showViewSubjectsForm = false;
+    this.showMarksForm = false;
+    this.showSearchForm = false;
+  }
+}
 
-
-
-
+toggleSearchForm(): void {
+  this.showSearchForm = !this.showSearchForm;
+}
   prevSummaryPage(): void {
     if (this.summaryPage > 0) {
       this.summaryPage--;

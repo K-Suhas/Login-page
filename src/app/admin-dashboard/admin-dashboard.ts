@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { PercentageGraphComponent } from '../percentage-graph/percentage-graph';
 import { NotificationBellComponent } from '../notification-bell/notification-bell';
 import { StudentReportService } from '../Service/StudentReportService';
+import { DepartmentService } from '../Service/DepartmentService';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -52,7 +53,8 @@ toggleSidebar() {
     private adminService: AdminService,
     private mailService: MailService,
     private reportService: StudentReportService,
-    private router: Router
+    private router: Router,
+    private departmentService: DepartmentService
   ) {}
 
   ngOnInit(): void {
@@ -86,6 +88,9 @@ toggleSidebar() {
   goToCourses() { this.router.navigate(['/course']); }
   goToMarksheet() { this.router.navigate(['/marksheet']); }
   goToTeacherManagement() { this.router.navigate(['/teacher']); }
+  goToDepartment(): void {
+  this.router.navigate(['/department']);
+}
   addAdmin() {
     if (!this.newAdmin.name.trim() || !this.newAdmin.email.trim()) {
       this.adminMessage = '❌ Name and email are required';
@@ -196,6 +201,22 @@ toggleSidebar() {
       });
     }, 1000);
   }
+  showAddDepartmentForm = false;
+newDepartment = { name: '' };
+deptMessage = '';
+
+toggleAddDepartmentForm(): void {
+  this.showAddDepartmentForm = !this.showAddDepartmentForm;
+  this.newDepartment = { name: '' };
+  this.deptMessage = '';
+}
+departments: { id: number; name: string }[] = [];
+
+
+
+
+
+
 
   downloadCsv() {
     if (!this.reportJobId) return;

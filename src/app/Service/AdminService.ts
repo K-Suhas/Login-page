@@ -12,4 +12,5 @@ export class AdminService {
    addAdmin(admin: { name: string; email: string}): Observable<any> {
     return this.http.post<any>('http://localhost:8080/auth/add-admin', admin);
   }
+  
 }
