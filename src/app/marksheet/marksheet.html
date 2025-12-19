@@ -16,6 +16,8 @@
 
   <!-- Search Marksheet: visible to all -->
   <button class="primary-button" (click)="toggleSearchForm()">🔍 Search Marksheet</button>
+
+   <button *ngIf="auth.getRole() === 'STUDENT'" class="primary-button" (click)="toggleChooseSubjectsForm()">🎯 Choose Subjects</button>
 </div>
 
 
@@ -156,6 +158,51 @@
         <button type="button" (click)="submitMarks()" class="primary-button">Submit Marks</button>
       </div>
     </form>
+  </div>
+
+   <!-- Choose Subjects Modal (NEW) -->
+  <div *ngIf="showChooseSubjectsForm" class="modal">
+    <h3>Choose Subjects</h3>
+
+    <!-- Department fixed -->
+    <div class="form-row">
+      <label>Department:</label>
+      <input type="text" [value]="fixedDepartmentName" readonly />
+    </div>
+
+    <!-- Semester dropdown -->
+    <div class="form-row">
+      <label>Semester:</label>
+      <select [(ngModel)]="chooseSemester" (change)="loadAvailableSubjectsForChoice()">
+        <option *ngFor="let sem of semesters" [ngValue]="sem">{{ sem }}</option>
+      </select>
+    </div>
+
+    <!-- Subject selection -->
+    <div *ngIf="availableSubjectsForChoice.length">
+      <p>Select exactly 4 subjects:</p>
+      <div *ngFor="let s of availableSubjectsForChoice">
+        <input type="checkbox"
+               [value]="s.id"
+               (change)="onToggleSubjectChoice($event, s.id)"
+               [disabled]="isChoiceLocked" />
+        {{ s.name }}
+      </div>
+    </div>
+
+    <div *ngIf="!availableSubjectsForChoice.length && chooseSemester">
+      <p class="error">No subjects added to this semester yet.</p>
+    </div>
+
+    <!-- Save button -->
+    <div class="unified-buttons">
+      <button class="primary-button"
+              (click)="submitSubjectChoices()"
+              [disabled]="!canSubmitChoices()">
+        Save Choices
+      </button>
+      <button class="secondary-button" (click)="toggleChooseSubjectsForm()">Cancel</button>
+    </div>
   </div>
 
   <!-- Marksheet Summary -->

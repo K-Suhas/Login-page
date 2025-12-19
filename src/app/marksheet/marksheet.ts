@@ -9,6 +9,7 @@ import { AuthService } from '../Service/AuthService';
 import { StudentReportService, StudentMarksheetDTO } from '../Service/StudentReportService';
 import { SubjectService, SubjectDTO } from '../Service/SubjectService';
 import { DepartmentService, DepartmentDTO } from '../Service/DepartmentService';
+import { SubjectChoiceService } from '../Service/SubjectChoiceService';
 
 @Component({
   selector: 'app-marksheet',
@@ -42,6 +43,12 @@ export class MarksheetComponent implements OnInit {
   semesters: number[] = [1,2,3,4,5,6,7,8];
   fixedDepartmentName: string = '';
 
+  showChooseSubjectsForm = false;
+  chooseSemester: number | null = null;
+  availableSubjectsForChoice: any[] = [];
+  chosenSubjectIds: number[] = [];
+  isChoiceLocked = false;
+
 
   message = '';
   isError = false;
@@ -52,7 +59,8 @@ export class MarksheetComponent implements OnInit {
     public auth: AuthService,
     private reportService: StudentReportService,
     private subjectService: SubjectService,
-    private departmentService: DepartmentService
+    private departmentService: DepartmentService,
+    private subjectChoiceService: SubjectChoiceService
   ) {}
 
   ngOnInit(): void {
@@ -184,42 +192,40 @@ if (role === 'TEACHER' || role === 'STUDENT') {
   const studentId = this.marksForm.get('studentId')?.value;
   const semester = this.marksForm.get('semester')?.value;
 
-  // ✅ Clear subjects table before each load
-  this.subjectsArray.clear();
-
-  if (!studentId || !semester) {
-    this.setMessage('Enter student ID and semester', true);
-    return;
-  }
-
-  const role = this.auth.getRole();
-  const user = this.auth.getUser();
-
-  if (role === 'TEACHER') {
-    this.service.getStudentDepartment(studentId).subscribe({
-      next: dept => {
-        if (Number(dept.id) !== Number(user?.departmentId)) {
-          this.setMessage('Not allowed to add marks for student of another department', true);
-          // ✅ Hide table on error
-          this.subjectsArray.clear();
-          return;
-        }
-        this.loadSubjectsForMarks(studentId, semester);
-      },
-      error: err => {
-        if (err.status === 404) {
-          this.setMessage(`No student found with id ${studentId}`, true);
-        } else {
-          this.setMessage(err.error?.message || 'Failed to validate student department', true);
-        }
-        // ✅ Hide table on error
+  this.subjectChoiceService.getStudentChoice(studentId, semester).subscribe({
+    next: (choice: any) => {
+      if (!choice || !choice.subjectIds || choice.subjectIds.length === 0) {
+        this.setMessage('Student has not chosen subjects for this semester', true);
         this.subjectsArray.clear();
+        return;
       }
-    });
-  } else {
-    this.loadSubjectsForMarks(studentId, semester);
-  }
+
+      this.subjectService.getSubjectsByIds(choice.subjectIds).subscribe({
+        next: (subjects: any[]) => {
+          this.subjectsArray.clear();
+          subjects.forEach(s => {
+            this.subjectsArray.push(this.fb.group({
+              subjectId: [s.id],
+              subjectName: [s.name],
+              marksObtained: [0]
+            }));
+          });
+        },
+        error: () => this.setMessage('Failed to load chosen subjects', true)
+      });
+    },
+    error: (err) => {
+      if (err.status === 404) {
+        this.setMessage('Student has not chosen subjects for this semester', true);
+      } else {
+        this.setMessage('Failed to load subject choice', true);
+      }
+      this.subjectsArray.clear();
+    }
+  });
 }
+
+
 
 
 
@@ -482,4 +488,115 @@ clearSummary(): void {
       error: err => this.setMessage(err.error?.message || err.error || 'Failed to download report', true)
     });
   }
+
+loadAvailableSubjectsForChoice(): void {
+  const deptId = this.auth.getDepartmentId();
+  const studentId = this.auth.getUser()?.id;
+
+  // Guard against missing values
+  if (!deptId || !studentId || !this.chooseSemester) {
+    this.setMessage('Missing department, student, or semester', true);
+    return;
+  }
+
+  // 1) Check if already chosen (locked)
+  this.subjectChoiceService.getStudentChoice(studentId, this.chooseSemester).subscribe({
+    next: (choice: any) => {
+      if (choice && choice.locked) {
+        this.isChoiceLocked = true;
+        this.chosenSubjectIds = choice.subjectIds;
+        this.setMessage('You have already chosen subjects for this semester', true);
+      }
+    },
+    error: () => {
+      // ignore if not found
+    }
+  });
+
+  // 2) Load available subjects for dept+semester
+  this.subjectService.getByDepartmentAndSemester(deptId, this.chooseSemester).subscribe({
+    next: (list: any[]) => {
+      if (!list || list.length === 0) {
+        this.setMessage('No subjects added to this semester yet', true);
+        this.availableSubjectsForChoice = [];
+      } else {
+        this.availableSubjectsForChoice = list;
+      }
+    },
+    error: () => {
+      this.setMessage('Failed to load subjects', true);
+      this.availableSubjectsForChoice = [];
+    }
+  });
+}
+toggleChooseSubjectsForm(): void {
+  this.showChooseSubjectsForm = !this.showChooseSubjectsForm;
+  this.chosenSubjectIds = [];
+  this.isChoiceLocked = false;
+}
+
+// --- Checkbox handler ---
+onToggleSubjectChoice(event: Event, subjectId: number): void {
+  const checked = (event.target as HTMLInputElement).checked;
+  if (checked) {
+    if (this.chosenSubjectIds.length >= 4) {
+      (event.target as HTMLInputElement).checked = false;
+      this.setMessage('You must choose exactly 4 subjects', true);
+      return;
+    }
+    this.chosenSubjectIds.push(subjectId);
+  } else {
+    this.chosenSubjectIds = this.chosenSubjectIds.filter(id => id !== subjectId);
+  }
+}
+
+// --- Validation helper ---
+canSubmitChoices(): boolean {
+  return this.chosenSubjectIds.length === 4 && !this.isChoiceLocked;
+}
+
+// --- Submit choices ---
+submitSubjectChoices(): void {
+  const studentId = this.auth.getUser()?.id;
+  console.log("Submitting subject choices for student ID:", studentId);
+  const deptId = this.auth.getDepartmentId();
+
+  if (!studentId || !deptId || !this.chooseSemester) {
+    this.setMessage('Missing student, department, or semester', true);
+    return;
+  }
+
+  if (this.chosenSubjectIds.length !== 4) {
+    this.setMessage('You must choose exactly 4 subjects', true);
+    return;
+  }
+  console.log({
+  studentId,
+  departmentId: deptId,
+  semester: this.chooseSemester,
+  subjectIds: this.chosenSubjectIds
+});
+
+
+  this.subjectChoiceService.createStudentChoice({
+    studentId,
+    departmentId: deptId,
+    semester: this.chooseSemester,
+    subjectIds: this.chosenSubjectIds
+  }).subscribe({
+    next: () => {
+      this.setMessage('Subjects chosen successfully', false);
+      this.showChooseSubjectsForm = false;
+    },
+    error: (err) => {
+      if (err.status === 400) {
+        this.setMessage('Invalid subject choice — must be 4 valid subjects', true);
+      } else {
+        this.setMessage('Failed to save choices', true);
+      }
+    }
+  });
+}
+
+
 }

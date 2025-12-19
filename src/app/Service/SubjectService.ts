@@ -61,4 +61,7 @@ export class SubjectService {
       responseType: 'text'
     });
   }
+   getSubjectsByIds(ids: number[]): Observable<any[]> {
+  return this.http.post<any[]>(`${this.baseUrl}/by-ids`, ids);
+}
 }

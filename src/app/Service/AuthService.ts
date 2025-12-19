@@ -11,18 +11,26 @@ export class AuthService {
   }
 
   setUser(user: any) {
-  // If backend sends nested department object, flatten it
+  // Always flatten department if backend sends nested object
   if (user?.department) {
     user.departmentId = user.department.id;
     user.departmentName = user.department.name;
   }
+
+  // ✅ Ensure we always store the correct DB id
+  if (user?.studentId) {
+    // Some backends send "studentId" instead of "id"
+    user.id = user.studentId;
+  }
+
+  // If backend sends nested student object, flatten it
+  if (user?.student?.id) {
+    user.id = user.student.id;
+  }
+
   this.user = user;
   localStorage.setItem('user', JSON.stringify(this.user));
 }
-
-
-
-
 
   getUser() {
     return this.user;
